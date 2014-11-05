@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ClassicMix</string>
+    <string name="action_play">Play</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_background_animations_summary">Enable background animations during gameplay.</string>
+    <string name="settings_background_animations_title">Enable animations</string>
+    <string name="settings_background_opacity_message">Select the background image opacity level</string>
+    <string name="settings_background_opacity_title">Background image opacity</string>
+    <string name="settings_category_background">Background</string>
+    <string name="settings_category_background_summary">Background image preferences</string>
+    <string name="settings_category_gameplay">Gameplay</string>
+    <string name="settings_category_gameplay_summary">Gameplay configurations</string>
+    <string name="settings_gameplay_difficulty_title">Difficulty</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="settings_sound_music_volume_title">Music Volume</string>
+    <string name="settings_sound_music_volume_message">Adjust the music volume.</string>
+    <string name="settings_sound_effects_volume_title">Effects Volume</string>
+    <string name="settings_sound_effects_volume_message">Adjust the effects volume.</string>
+    <string name="settings_category_sound">Sound</string>
+    <string name="settings_category_sound_summary">Sound settings</string>
+    <string name="settings_category_graphics">Graphics</string>
+    <string name="settings_category_graphics_summary">Display settings</string>
+
+    <string-array name="settings_gameplay_difficulty_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="settings_gameplay_difficulty_entries">
+        <item>Easy</item>
+        <item>Normal</item>
+        <item>Hard</item>
+    </string-array>
+    <string-array name="settings_background_opacity_summaries">
+        <item>Transparent</item>
+        <item>Translucent</item>
+        <item>Opaque</item>
+    </string-array>
+    <string-array name="settings_sound_volume_entries">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>Loud</item>
+    </string-array>
+</resources>

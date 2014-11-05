@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/settings_category_background"
+        android:summary="@string/settings_category_background_summary">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="background_animations"
+            android:title="@string/settings_background_animations_title"
+            android:summary="@string/settings_background_animations_summary"/>
+        <br.pucpr.jvlppm.classicmix.android.SliderPreference
+            android:defaultValue="0.75"
+            android:key="background_opacity"
+            android:title="@string/settings_background_opacity_title"
+            android:dialogMessage="@string/settings_background_opacity_message"
+            android:summary="@array/settings_background_opacity_summaries"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>
