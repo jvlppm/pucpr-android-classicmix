@@ -23,6 +23,12 @@
             android:icon="@drawable/ic_launcher"
             android:name=".SettingsActivity"
             android:theme="@style/AppTheme"/>
+
+        <activity
+            android:allowBackup="true"
+            android:icon="@drawable/ic_launcher"
+            android:name=".ClassicMixActivity"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

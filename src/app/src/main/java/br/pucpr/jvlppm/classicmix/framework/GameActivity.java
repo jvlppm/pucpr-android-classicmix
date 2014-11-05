@@ -5,7 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Bundle;
 
-public abstract class Game extends Activity {
+public abstract class GameActivity extends Activity {
     GameTime gameTime;
     FrameBuffer frameBuffer;
     Canvas frameBufferCanvas;
@@ -16,6 +16,18 @@ public abstract class Game extends Activity {
 
         gameTime = new GameTime();
         setFrameBuffer(createFrameBuffer());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        frameBuffer.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        frameBuffer.resume();
     }
 
     final void setFrameBuffer(FrameBuffer frameBuffer) {

@@ -17,4 +17,9 @@ public class TitleScreen extends Activity {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
+
+    public void onClickPlay(View view) {
+        Intent intent = new Intent(this, ClassicMixActivity.class);
+        startActivity(intent);
+    }
 }

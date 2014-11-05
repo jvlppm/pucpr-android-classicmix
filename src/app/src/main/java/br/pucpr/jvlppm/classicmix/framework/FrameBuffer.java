@@ -7,7 +7,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class FrameBuffer extends SurfaceView implements Runnable {
-    private final Game game;
+    private final GameActivity game;
     private SurfaceHolder holder;
 
     private final Bitmap frameBuffer;
@@ -16,7 +16,7 @@ public class FrameBuffer extends SurfaceView implements Runnable {
     private boolean running;
     private Thread renderThread;
 
-    public FrameBuffer(Game game, int width, int height) {
+    public FrameBuffer(GameActivity game, int width, int height) {
         super(game);
         this.game = game;
         this.frameBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
