@@ -1,4 +1,4 @@
-package br.pucpr.jvlppm.classicmix.framework;
+package br.pucpr.jvlppm.classicmix.core;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -6,7 +6,7 @@ import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class FrameBuffer extends SurfaceView implements Runnable {
+public class GameView extends SurfaceView implements Runnable {
     private final GameActivity game;
     private SurfaceHolder holder;
 
@@ -16,7 +16,7 @@ public class FrameBuffer extends SurfaceView implements Runnable {
     private boolean running;
     private Thread renderThread;
 
-    public FrameBuffer(GameActivity game, int width, int height) {
+    public GameView(GameActivity game, int width, int height) {
         super(game);
         this.game = game;
         this.frameBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
@@ -60,5 +60,13 @@ public class FrameBuffer extends SurfaceView implements Runnable {
             canvas.drawBitmap(frameBuffer, null, dstRect, null);
             holder.unlockCanvasAndPost(canvas);
         }
+    }
+
+    public int getFrameBufferWidth() {
+        return frameBuffer.getWidth();
+    }
+
+    public int getFrameBufferHeight() {
+        return frameBuffer.getHeight();
     }
 }

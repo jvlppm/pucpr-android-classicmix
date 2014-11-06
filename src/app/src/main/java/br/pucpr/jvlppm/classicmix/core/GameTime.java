@@ -1,4 +1,4 @@
-package br.pucpr.jvlppm.classicmix.framework;
+package br.pucpr.jvlppm.classicmix.core;
 
 public class GameTime {
     private float total;
@@ -13,8 +13,8 @@ public class GameTime {
 
     public void tick() {
         long nanoTime = System.nanoTime();
-        float deltaTime = (nanoTime-lastNanoTime) / 1000000000.0f;
-        total += deltaTime;
+        elapsed = (nanoTime-lastNanoTime) / 1000000000.0f;
+        total += elapsed;
         lastNanoTime = nanoTime;
     }
 

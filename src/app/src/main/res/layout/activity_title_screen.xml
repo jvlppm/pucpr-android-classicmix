@@ -21,18 +21,26 @@
             android:text="@string/app_name" />
     </FrameLayout>
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.5">
 
         <Button
+            android:id="@+id/playButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_centerInParent="true"
             android:text="@string/action_play"
-            android:onClick="onClickPlay"/>
-    </FrameLayout>
+            android:onClick="onClickPlay"
+            android:visibility="gone"/>
+        <ProgressBar
+            android:id="@+id/loadProgress"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/android:progressBarStyleSmall" />
+    </RelativeLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
