@@ -2,10 +2,11 @@ package br.pucpr.jvlppm.classicmix;
 
 import android.os.Bundle;
 
+import br.pucpr.jvlppm.classicmix.core.GameActivity;
 import br.pucpr.jvlppm.classicmix.core.GameScreen;
 import br.pucpr.jvlppm.classicmix.core.GameView;
 
-public class ClassicMixActivity extends br.pucpr.jvlppm.classicmix.core.GameActivity {
+public class ClassicMixActivity extends GameActivity {
     @Override
     protected GameView createGameView() {
         return new GameView(this, 512, 720);

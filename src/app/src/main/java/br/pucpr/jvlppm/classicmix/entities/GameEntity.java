@@ -7,7 +7,7 @@ import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 
 public class GameEntity {
-    private Rect tmpRect;
+    private final Rect tmpRect;
 
     public GameEntity() {
         tmpRect = new Rect();

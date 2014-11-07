@@ -11,11 +11,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
 import br.pucpr.jvlppm.classicmix.core.GameScreen;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
+import br.pucpr.jvlppm.classicmix.core.Vector;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
@@ -24,12 +26,15 @@ public class GamePlayScreen extends GameScreen {
     private final Paddle paddle;
     private final List<Ball> balls;
     private final List<Brick> bricks;
-    private final Rect tmpRectBrick, tmpRectBall;
+    private final Rect tmpRectObj, tmpRectBall;
+    private final Vector tmpVector;
+    private final Random random;
 
     private int currentLevel;
 
     private int paddleTouchId;
-    private float ballRadius, brickRadiusX, brickRadiusY;
+    private float ballRadius;
+    private float brickRadiusX, brickRadiusY;
 
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
@@ -38,19 +43,18 @@ public class GamePlayScreen extends GameScreen {
         add(paddle);
         balls = new ArrayList<Ball>();
         bricks = new ArrayList<Brick>();
+
         ballRadius = Assets.getInstance().ballBlue.texture.getWidth() / 2;
         brickRadiusX = Assets.getInstance().brickBlue.texture.getWidth() / 2;
         brickRadiusY = Assets.getInstance().brickBlue.texture.getHeight() / 2;
 
-        tmpRectBrick = new Rect();
+        tmpRectObj = new Rect();
         tmpRectBall = new Rect();
+        tmpVector = new Vector();
+
+        random = new Random(System.nanoTime());
 
         startLevel(0);
-    }
-
-    private void resetPaddle() {
-        paddle.x = game.getFrameBufferWidth() / 2;
-        paddle.y = game.getFrameBufferHeight() * 0.9f;
     }
 
     void startLevel(int level) {
@@ -58,6 +62,12 @@ public class GamePlayScreen extends GameScreen {
         resetPaddle();
         resetBalls();
         loadLevelData(level);
+    }
+
+    private void resetPaddle() {
+        paddle.setPosition(
+                game.getFrameBufferWidth() / 2,
+                game.getFrameBufferHeight() * 0.9f);
     }
 
     private void resetBalls() {
@@ -73,7 +83,7 @@ public class GamePlayScreen extends GameScreen {
         add(ball);
     }
 
-    void loadLevelData(int level) {
+    private void loadLevelData(int level) {
         for(Brick brick : bricks)
             remove(brick);
         bricks.clear();
@@ -104,7 +114,7 @@ public class GamePlayScreen extends GameScreen {
         }
     }
 
-    void createBrick(char brick, char item, int col, int row) {
+    private void createBrick(char brick, char item, int col, int row) {
         Frame frame = null;
         int strength = 1;
         switch (brick) {
@@ -152,18 +162,18 @@ public class GamePlayScreen extends GameScreen {
     private void checkBrickCollisions() {
         for(Ball ball : balls) {
             tmpRectBall.set((int) (ball.x - ballRadius),
-                            (int) (ball.y - ballRadius),
-                            (int) (ball.x + ballRadius),
-                            (int) (ball.y + ballRadius));
+                    (int) (ball.y - ballRadius),
+                    (int) (ball.x + ballRadius),
+                    (int) (ball.y + ballRadius));
             for(Brick brick : bricks) {
-                tmpRectBrick.set(
+                tmpRectObj.set(
                         (int) (brick.x - brickRadiusX),
                         (int) (brick.y - brickRadiusY),
                         (int) (brick.x + brickRadiusX),
                         (int) (brick.y + brickRadiusY));
 
-                if(tmpRectBall.intersects(tmpRectBrick.left, tmpRectBrick.top, tmpRectBrick.right, tmpRectBrick.bottom))
-                    ball.onBrickCollision(brick, tmpRectBall, tmpRectBrick);
+                if(tmpRectBall.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom))
+                    ball.onBrickCollision(brick, tmpRectBall, tmpRectObj);
             }
         }
 
@@ -175,11 +185,35 @@ public class GamePlayScreen extends GameScreen {
         }
     }
 
+    private void checkPaddleCollisions() {
+        paddle.getRect(tmpRectObj);
+
+        for (Ball ball : balls) {
+            if(ball.y > paddle.getY() ||
+               !tmpRectObj.intersects(
+                    (int) (ball.x - ballRadius),
+                    (int) (ball.y - ballRadius),
+                    (int) (ball.x + ballRadius),
+                    (int) (ball.y + ballRadius)))
+                continue;
+
+            ball.getVelocity(tmpVector);
+
+            float speed = tmpVector.length();
+            float position = (ball.x - tmpRectObj.left) / tmpRectObj.width();
+            float variation = random.nextFloat() * 0.1f - 0.05f;
+
+            Vector.fromDegrees(170 - (position * 0.95f + variation) * 160, tmpVector);
+            ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
+        }
+    }
+
     @Override
     protected void update(GameTime gameTime) {
         super.update(gameTime);
         checkWallCollisions();
         checkBrickCollisions();
+        checkPaddleCollisions();
     }
 
     @Override
@@ -191,15 +225,15 @@ public class GamePlayScreen extends GameScreen {
     @Override
     public boolean handleTouch(MotionEvent event, float touchX, float touchY) {
         if (paddleTouchId < 0 && event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (Math.abs(paddle.x - touchX) < 50 &&
-                    Math.abs(paddle.y - touchY) < 50)
+            if (Math.abs(paddle.getX() - touchX) < 50 &&
+                    Math.abs(paddle.getY() - touchY) < 50)
                 paddleTouchId = event.getPointerId(0);
         }
 
         if (paddleTouchId == event.getPointerId(0)) {
             if (event.getAction() == MotionEvent.ACTION_UP)
                 paddleTouchId = -1;
-            paddle.x = touchX;
+            paddle.setPosition(touchX, paddle.getY());
             return true;
         }
         return false;

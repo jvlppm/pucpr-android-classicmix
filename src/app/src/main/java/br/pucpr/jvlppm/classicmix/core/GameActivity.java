@@ -32,14 +32,15 @@ public abstract class GameActivity extends Activity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         gameView.pause();
+        super.onPause();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
+        gameTime.tick();
         gameView.resume();
+        super.onResume();
     }
 
     protected final void setGameView(GameView gameView) {

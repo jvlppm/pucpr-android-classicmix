@@ -68,6 +68,11 @@ public class Ball extends GameEntity {
         brick.strength--;
     }
 
+    public void getVelocity(Vector dest) {
+        dest.dx = velocity.dx;
+        dest.dy = velocity.dy;
+    }
+
     public void setVelocity(float vx, float vy) {
         this.velocity.dx = vx;
         this.velocity.dy = vy;
