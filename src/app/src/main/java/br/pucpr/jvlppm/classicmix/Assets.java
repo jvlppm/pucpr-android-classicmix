@@ -49,6 +49,7 @@ public class Assets {
     public Frame brickReinforcement;
     public Frame msgGameOver;
     public Frame msgMoveToBegin;
+    public Frame lifeIndicator;
 
     private Assets() {
         listeners = new ArrayList<LoadListener>();

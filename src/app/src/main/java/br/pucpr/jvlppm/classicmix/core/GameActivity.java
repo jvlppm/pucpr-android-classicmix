@@ -93,7 +93,10 @@ public abstract class GameActivity extends Activity {
         gameTime.tick();
 
         while(unhandledTouches.size() > 0) {
-            TouchEvent touch = unhandledTouches.remove(0);
+            TouchEvent touch;
+            synchronized (unhandledTouches) {
+                touch = unhandledTouches.remove(0);
+            }
             currentScreen.handleTouch(touch);
             handledTouches.add(touch);
         }
@@ -146,7 +149,9 @@ public abstract class GameActivity extends Activity {
         touch.y = touchY;
         touch.pointerId = event.getPointerId(0);
 
-        unhandledTouches.add(touch);
+        synchronized (unhandledTouches) {
+            unhandledTouches.add(touch);
+        }
         return true;
     }
 }

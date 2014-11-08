@@ -19,7 +19,7 @@ public class ClassicMixActivity extends GameActivity {
         setCurrentScreen(new GamePlayScreen(this, new GameScreen.FinishListener() {
             @Override
             public void onFinished(Object result) {
-
+                finish();
             }
         }));
     }

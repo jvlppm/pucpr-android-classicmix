@@ -21,6 +21,7 @@ import br.pucpr.jvlppm.classicmix.core.Vector;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.CenterMessage;
+import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
 
 public class GamePlayScreen extends GameScreen {
@@ -28,6 +29,7 @@ public class GamePlayScreen extends GameScreen {
 
     static final String Tag = "GamePlayScreen";
 
+    private final ExtraLifeCounter lifeCounter;
     private final Paddle paddle;
     private final List<Ball> balls;
     private final List<Brick> bricks;
@@ -38,7 +40,7 @@ public class GamePlayScreen extends GameScreen {
 
     private int currentLevel;
 
-    private int paddleTouchId;
+    private int trackTouchId;
     private float ballRadius;
     private float brickRadiusX, brickRadiusY;
 
@@ -46,6 +48,10 @@ public class GamePlayScreen extends GameScreen {
 
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
+
+        lifeCounter = new ExtraLifeCounter();
+        lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight());
+        add(lifeCounter);
 
         paddle = new Paddle();
         add(paddle);
@@ -65,13 +71,13 @@ public class GamePlayScreen extends GameScreen {
 
         random = new Random(System.nanoTime());
 
-        startLevel(0);
+        reset();
     }
 
     void startLevel(int level) {
         currentLevel = level;
         resetPaddle();
-        resetBalls();
+        resetBall();
         loadLevelData(level);
     }
 
@@ -105,19 +111,6 @@ public class GamePlayScreen extends GameScreen {
         paddle.setPosition(
                 game.getFrameBufferWidth() / 2,
                 game.getFrameBufferHeight() * 0.8f);
-    }
-
-    private void resetBalls() {
-        for(Ball ball : balls)
-            remove(ball);
-        balls.clear();
-
-        Ball ball = new Ball();
-        ball.x = game.getFrameBufferWidth() / 2;
-        ball.y = game.getFrameBufferHeight() * 0.6f;
-        balls.add(ball);
-        add(ball);
-        setState(State.WAITING);
     }
 
     private void loadLevelData(int level) {
@@ -177,8 +170,28 @@ public class GamePlayScreen extends GameScreen {
     private void destroyBall(Ball ball) {
         balls.remove(ball);
         remove(ball);
-        if(balls.isEmpty())
-            resetBalls();
+        if(balls.isEmpty()) {
+            if(lifeCounter.getExtraLives() > 0) {
+                lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
+                resetBall();
+            }
+            else
+                setState(State.GAME_OVER);
+        }
+    }
+
+    private void resetBall() {
+        Ball ball = new Ball();
+        ball.x = game.getFrameBufferWidth() / 2;
+        ball.y = game.getFrameBufferHeight() * 0.6f;
+        balls.add(ball);
+        add(ball);
+        setState(State.WAITING);
+    }
+
+    private void reset() {
+        lifeCounter.setExtraLives(3);
+        startLevel(0);
     }
 
     private void startBallMovement() {
@@ -277,17 +290,24 @@ public class GamePlayScreen extends GameScreen {
 
     @Override
     public void handleTouch(TouchEvent event) {
-        if (paddleTouchId < 0 && event.type == TouchEvent.Type.PRESS) {
-            if (Math.abs(paddle.getX() - event.x) < 50 &&
-                    event.y > paddle.getY() - 50)
-                paddleTouchId = event.pointerId;
+        if (state == State.GAME_OVER) {
+            if(event.type == TouchEvent.Type.RELEASE) {
+                reset();
+            }
+            return;
         }
 
-        if (paddleTouchId == event.pointerId) {
+        if (trackTouchId < 0 && event.type == TouchEvent.Type.PRESS) {
+            if (Math.abs(paddle.getX() - event.x) < 50 &&
+                    event.y > paddle.getY() - 50)
+                trackTouchId = event.pointerId;
+        }
+
+        if (trackTouchId == event.pointerId) {
             if (event.type == TouchEvent.Type.RELEASE) {
                 if(state == State.WAITING)
                     setState(State.PLAYING);
-                paddleTouchId = -1;
+                trackTouchId = -1;
             }
             paddle.setPosition(event.x, paddle.getY());
         }
