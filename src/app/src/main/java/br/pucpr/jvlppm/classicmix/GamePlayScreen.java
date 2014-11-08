@@ -23,12 +23,14 @@ import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.CenterMessage;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
+import br.pucpr.jvlppm.classicmix.entities.Score;
 
 public class GamePlayScreen extends GameScreen {
     private static enum State { WAITING, PLAYING, GAME_OVER };
 
     static final String Tag = "GamePlayScreen";
 
+    private final Score score;
     private final ExtraLifeCounter lifeCounter;
     private final Paddle paddle;
     private final List<Ball> balls;
@@ -48,6 +50,9 @@ public class GamePlayScreen extends GameScreen {
 
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
+
+        score = new Score();
+        add(score);
 
         lifeCounter = new ExtraLifeCounter();
         lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight());
@@ -76,7 +81,6 @@ public class GamePlayScreen extends GameScreen {
 
     void startLevel(int level) {
         currentLevel = level;
-        resetPaddle();
         resetBall();
         loadLevelData(level);
     }
@@ -140,6 +144,8 @@ public class GamePlayScreen extends GameScreen {
             }
 
         } catch (IOException e) {
+            if(level > 0)
+                startLevel(0);
             e.printStackTrace();
         }
     }
@@ -181,6 +187,10 @@ public class GamePlayScreen extends GameScreen {
     }
 
     private void resetBall() {
+        for(Ball ball : balls)
+            remove(ball);
+        balls.clear();
+
         Ball ball = new Ball();
         ball.x = game.getFrameBufferWidth() / 2;
         ball.y = game.getFrameBufferHeight() * 0.6f;
@@ -190,7 +200,9 @@ public class GamePlayScreen extends GameScreen {
     }
 
     private void reset() {
+        score.reset();
         lifeCounter.setExtraLives(3);
+        resetPaddle();
         startLevel(0);
     }
 
@@ -236,8 +248,10 @@ public class GamePlayScreen extends GameScreen {
                         (int) (brick.x + brickRadiusX),
                         (int) (brick.y + brickRadiusY));
 
-                if(tmpRectBall.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom))
+                if(tmpRectBall.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom)) {
                     ball.onBrickCollision(brick, tmpRectBall, tmpRectObj);
+                    score.add(30);
+                }
             }
         }
 
@@ -245,7 +259,12 @@ public class GamePlayScreen extends GameScreen {
             if (bricks.get(i).strength <= 0) {
                 remove(bricks.get(i));
                 bricks.remove(i);
+                score.add(100);
             }
+        }
+
+        if(bricks.size() <= 0) {
+            startLevel(currentLevel + 1);
         }
     }
 
