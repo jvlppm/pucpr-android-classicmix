@@ -98,7 +98,9 @@ public abstract class GameActivity extends Activity {
                 touch = unhandledTouches.remove(0);
             }
             currentScreen.handleTouch(touch);
-            handledTouches.add(touch);
+            synchronized (handledTouches) {
+                handledTouches.add(touch);
+            }
         }
 
         if(currentScreen != null) {
@@ -140,8 +142,11 @@ public abstract class GameActivity extends Activity {
         }
 
         TouchEvent touch;
-        if(handledTouches.size() > 0)
-            touch = handledTouches.remove(0);
+        if(handledTouches.size() > 0) {
+            synchronized (handledTouches) {
+                touch = handledTouches.remove(0);
+            }
+        }
         else touch = new TouchEvent();
 
         touch.type = type;
