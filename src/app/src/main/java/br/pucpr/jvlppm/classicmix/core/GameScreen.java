@@ -1,7 +1,6 @@
 package br.pucpr.jvlppm.classicmix.core;
 
 import android.graphics.Canvas;
-import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +8,7 @@ import java.util.List;
 import br.pucpr.jvlppm.classicmix.entities.GameEntity;
 
 public class GameScreen <T> {
-    public boolean handleTouch(MotionEvent event, float touchX, float touchY) {
-        return false;
-    }
+    public void handleTouch(TouchEvent event) { }
 
     public static interface FinishListener<T> {
         public void onFinished(T result);

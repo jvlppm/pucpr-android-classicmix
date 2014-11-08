@@ -8,11 +8,20 @@ import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class GameActivity extends Activity {
     private GameTime gameTime;
     private GameView gameView;
     private Canvas gameViewCanvas;
     private GameScreen currentScreen;
+    private final List<TouchEvent> unhandledTouches, handledTouches;
+
+    protected GameActivity() {
+        unhandledTouches = new ArrayList<TouchEvent>();
+        handledTouches = new ArrayList<TouchEvent>();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +92,12 @@ public abstract class GameActivity extends Activity {
     void tick() {
         gameTime.tick();
 
+        while(unhandledTouches.size() > 0) {
+            TouchEvent touch = unhandledTouches.remove(0);
+            currentScreen.handleTouch(touch);
+            handledTouches.add(touch);
+        }
+
         if(currentScreen != null) {
             currentScreen.update(gameTime);
             currentScreen.draw(gameTime, gameViewCanvas);
@@ -103,6 +118,35 @@ public abstract class GameActivity extends Activity {
     }
 
     protected boolean handleTouch(MotionEvent event, float touchX, float touchY) {
-        return currentScreen != null && currentScreen.handleTouch(event, touchX, touchY);
+        if(currentScreen == null)
+            return false;
+
+        TouchEvent.Type type;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                type = TouchEvent.Type.PRESS;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                type = TouchEvent.Type.MOVE;
+                break;
+            case MotionEvent.ACTION_UP:
+                type = TouchEvent.Type.RELEASE;
+                break;
+
+            default: return false;
+        }
+
+        TouchEvent touch;
+        if(handledTouches.size() > 0)
+            touch = handledTouches.remove(0);
+        else touch = new TouchEvent();
+
+        touch.type = type;
+        touch.x = touchX;
+        touch.y = touchY;
+        touch.pointerId = event.getPointerId(0);
+
+        unhandledTouches.add(touch);
+        return true;
     }
 }
