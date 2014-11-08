@@ -1,4 +1,4 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.services;
 
 import android.app.Activity;
 import android.content.Context;

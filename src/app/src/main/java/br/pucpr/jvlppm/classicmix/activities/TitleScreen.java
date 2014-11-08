@@ -1,4 +1,4 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+
+import br.pucpr.jvlppm.classicmix.services.Assets;
+import br.pucpr.jvlppm.classicmix.R;
 
 public class TitleScreen extends Activity implements Assets.LoadListener {
 

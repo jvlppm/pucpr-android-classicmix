@@ -2,7 +2,7 @@ package br.pucpr.jvlppm.classicmix.entities;
 
 import android.graphics.Canvas;
 
-import br.pucpr.jvlppm.classicmix.Assets;
+import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 

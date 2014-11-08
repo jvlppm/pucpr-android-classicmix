@@ -1,4 +1,4 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.screens;
 
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import br.pucpr.jvlppm.classicmix.services.Assets;
+import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
 import br.pucpr.jvlppm.classicmix.core.GameScreen;

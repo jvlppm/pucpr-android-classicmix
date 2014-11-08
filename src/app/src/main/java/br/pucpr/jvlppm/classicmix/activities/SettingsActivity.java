@@ -1,10 +1,12 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.activities;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
 import java.util.List;
+
+import br.pucpr.jvlppm.classicmix.R;
 
 public class SettingsActivity extends PreferenceActivity {
     @Override

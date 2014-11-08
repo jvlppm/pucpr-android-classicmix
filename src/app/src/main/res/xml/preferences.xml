@@ -1,15 +1,15 @@
 <preference-headers
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <header android:fragment="br.pucpr.jvlppm.classicmix.SettingsActivity$GameplayPreferencesFragment"
+    <header android:fragment="br.pucpr.jvlppm.classicmix.activities.SettingsActivity$GameplayPreferencesFragment"
         android:title="@string/settings_category_gameplay"
         android:summary="@string/settings_category_gameplay_summary" />
 
-    <header android:fragment="br.pucpr.jvlppm.classicmix.SettingsActivity$SoundPreferencesFragment"
+    <header android:fragment="br.pucpr.jvlppm.classicmix.activities.SettingsActivity$SoundPreferencesFragment"
         android:title="@string/settings_category_sound"
         android:summary="@string/settings_category_sound_summary" />
 
-    <header android:fragment="br.pucpr.jvlppm.classicmix.SettingsActivity$GraphicsPreferencesFragment"
+    <header android:fragment="br.pucpr.jvlppm.classicmix.activities.SettingsActivity$GraphicsPreferencesFragment"
         android:title="@string/settings_category_graphics"
         android:summary="@string/settings_category_graphics_summary" />
 

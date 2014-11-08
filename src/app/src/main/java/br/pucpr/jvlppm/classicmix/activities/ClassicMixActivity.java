@@ -1,10 +1,11 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.activities;
 
 import android.os.Bundle;
 
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
 import br.pucpr.jvlppm.classicmix.core.GameScreen;
 import br.pucpr.jvlppm.classicmix.core.GameView;
+import br.pucpr.jvlppm.classicmix.screens.GamePlayScreen;
 
 public class ClassicMixActivity extends GameActivity {
     @Override

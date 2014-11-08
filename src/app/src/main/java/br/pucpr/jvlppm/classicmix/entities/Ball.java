@@ -3,7 +3,7 @@ package br.pucpr.jvlppm.classicmix.entities;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
-import br.pucpr.jvlppm.classicmix.Assets;
+import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.Vector;

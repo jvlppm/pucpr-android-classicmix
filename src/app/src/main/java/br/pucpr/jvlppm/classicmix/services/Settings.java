@@ -1,8 +1,10 @@
-package br.pucpr.jvlppm.classicmix;
+package br.pucpr.jvlppm.classicmix.services;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
+import br.pucpr.jvlppm.classicmix.R;
 
 public class Settings {
     private static Context context;
