@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 import br.pucpr.jvlppm.classicmix.core.GameTime;
+import br.pucpr.jvlppm.classicmix.services.HighScore;
 
 public class Score extends GameEntity {
     private int score;
@@ -24,6 +25,7 @@ public class Score extends GameEntity {
         paint.setShadowLayer(6, 2, 2, Color.BLACK);
         rectHiScore = new Rect();
         rectScore = new Rect();
+        setHighScore(HighScore.getInstance().getHighScore());
         setScore(0);
     }
 
@@ -36,6 +38,7 @@ public class Score extends GameEntity {
         highScoreText = "HI: " + score;
 
         paint.getTextBounds(highScoreText, 0, highScoreText.length(), rectHiScore);
+        HighScore.getInstance().setHighScore(score);
     }
 
     private void setScore(int score) {
