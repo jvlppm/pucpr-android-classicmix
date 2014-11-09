@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
@@ -24,8 +23,10 @@ import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.CenterMessage;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
+import br.pucpr.jvlppm.classicmix.entities.Item;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
 import br.pucpr.jvlppm.classicmix.entities.Score;
+import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class GamePlayScreen extends GameScreen {
     private static enum State { WAITING, PLAYING, GAME_OVER };
@@ -37,8 +38,9 @@ public class GamePlayScreen extends GameScreen {
     private final Paddle paddle;
     private final List<Ball> balls;
     private final List<Brick> bricks;
+    private final List<Item> fallingItems;
     private final CenterMessage msgMoveToBegin, msgGameOver;
-    private final Rect tmpRectObj, tmpRectBall;
+    private final Rect tmpRectPaddle, tmpRectObj;
     private final Vector tmpVector;
     private final Random random;
 
@@ -47,6 +49,8 @@ public class GamePlayScreen extends GameScreen {
     private int trackTouchId;
     private float ballRadius;
     private float brickRadiusX, brickRadiusY;
+
+    private float ballSlowEffect;
 
     private State state;
 
@@ -64,6 +68,7 @@ public class GamePlayScreen extends GameScreen {
         add(paddle);
         balls = new ArrayList<Ball>();
         bricks = new ArrayList<Brick>();
+        fallingItems = new ArrayList<Item>();
 
         Assets assets = Assets.getInstance();
         ballRadius = assets.ballBlue.texture.getWidth() / 2;
@@ -72,8 +77,8 @@ public class GamePlayScreen extends GameScreen {
         msgMoveToBegin = new CenterMessage(assets.msgMoveToBegin);
         msgGameOver = new CenterMessage(assets.msgGameOver);
 
+        tmpRectPaddle = new Rect();
         tmpRectObj = new Rect();
-        tmpRectBall = new Rect();
         tmpVector = new Vector();
 
         random = new Random(System.nanoTime());
@@ -84,6 +89,7 @@ public class GamePlayScreen extends GameScreen {
     void startLevel(int level) {
         currentLevel = level;
         resetBall();
+        removeFallingItems();
         loadLevelData(level);
     }
 
@@ -172,6 +178,7 @@ public class GamePlayScreen extends GameScreen {
         bEntity.x = col * frame.rect.width() + frame.rect.width() / 2;
         bEntity.y = row * frame.rect.height() + frame.rect.height() / 2;
         add(bEntity);
+        bEntity.itemCode = item;
         bricks.add(bEntity);
     }
 
@@ -181,6 +188,7 @@ public class GamePlayScreen extends GameScreen {
         if(balls.isEmpty()) {
             if(lifeCounter.getExtraLives() > 0) {
                 lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
+                removeFallingItems();
                 resetBall();
             }
             else
@@ -199,6 +207,15 @@ public class GamePlayScreen extends GameScreen {
         balls.add(ball);
         add(ball);
         setState(State.WAITING);
+
+        ballSlowEffect = 1;
+    }
+
+    private void removeFallingItems() {
+        for(Item item : fallingItems) {
+            remove(item);
+        }
+        fallingItems.clear();
     }
 
     private void reset() {
@@ -209,11 +226,11 @@ public class GamePlayScreen extends GameScreen {
     }
 
     private void startBallMovement() {
-        paddle.getRect(tmpRectObj);
+        paddle.getRect(tmpRectPaddle);
 
         for(Ball ball : balls) {
-            float targetX = tmpRectObj.left + (random.nextFloat() * 0.2f + 0.4f) * tmpRectObj.width();
-            float targetY = tmpRectObj.top;
+            float targetX = tmpRectPaddle.left + (random.nextFloat() * 0.2f + 0.4f) * tmpRectPaddle.width();
+            float targetY = tmpRectPaddle.top;
 
             tmpVector.dx = targetX - ball.x;
             tmpVector.dy = targetY - ball.y;
@@ -239,29 +256,29 @@ public class GamePlayScreen extends GameScreen {
 
     private void checkBrickCollisions() {
         for(Ball ball : balls) {
-            tmpRectBall.set((int) (ball.x - ballRadius),
+            tmpRectObj.set((int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
                     (int) (ball.y + ballRadius));
-            for(Brick brick : bricks) {
-                tmpRectObj.set(
+            for(int i = bricks.size() - 1; i >= 0; i--) {
+                Brick brick = bricks.get(i);
+                tmpRectPaddle.set(
                         (int) (brick.x - brickRadiusX),
                         (int) (brick.y - brickRadiusY),
                         (int) (brick.x + brickRadiusX),
                         (int) (brick.y + brickRadiusY));
 
-                if(tmpRectBall.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom)) {
-                    ball.onBrickCollision(brick, tmpRectBall, tmpRectObj);
+                if(tmpRectObj.intersects(tmpRectPaddle.left, tmpRectPaddle.top, tmpRectPaddle.right, tmpRectPaddle.bottom)) {
+                    ball.onBrickCollision(brick, tmpRectObj, tmpRectPaddle);
                     score.add(30);
-                }
-            }
-        }
 
-        for(int i = bricks.size() - 1; i >= 0; i--) {
-            if (bricks.get(i).strength <= 0) {
-                remove(bricks.get(i));
-                bricks.remove(i);
-                score.add(100);
+                    if (brick.strength <= 0) {
+                        remove(brick);
+                        dropItems(brick);
+                        bricks.remove(i);
+                        score.add(100);
+                    }
+                }
             }
         }
 
@@ -270,12 +287,35 @@ public class GamePlayScreen extends GameScreen {
         }
     }
 
+    private void dropItems(Brick brick) {
+        Frame frame;
+        switch (brick.itemCode) {
+            case 's':
+                frame = Assets.getInstance().itemSlowBall;
+                break;
+            case 'l':
+                frame = Assets.getInstance().itemLaser;
+                break;
+            case 'p':
+                frame = Assets.getInstance().itemPierce;
+                break;
+            case 'e':
+                frame = Assets.getInstance().itemEnlarge;
+                break;
+            default: return;
+        }
+
+        Item item = new Item(frame, brick.x, brick.y);
+        add(item);
+        fallingItems.add(item);
+    }
+
     private void checkPaddleCollisions() {
-        paddle.getRect(tmpRectObj);
+        paddle.getRect(tmpRectPaddle);
 
         for (Ball ball : balls) {
             if(ball.y > paddle.getY() ||
-               !tmpRectObj.intersects(
+               !tmpRectPaddle.intersects(
                     (int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
@@ -285,7 +325,7 @@ public class GamePlayScreen extends GameScreen {
             ball.getVelocity(tmpVector);
 
             float speed = tmpVector.getLength();
-            float position = (ball.x - tmpRectObj.left) / tmpRectObj.width();
+            float position = (ball.x - tmpRectPaddle.left) / tmpRectPaddle.width();
             float variation = random.nextFloat() * 0.1f - 0.05f;
 
             float degrees = 180 - (position * 0.95f + variation) * 180;
@@ -295,12 +335,39 @@ public class GamePlayScreen extends GameScreen {
         }
     }
 
+    private void checkFallingItems() {
+        paddle.getRect(tmpRectPaddle);
+
+        for(int i = fallingItems.size() - 1; i >= 0; i--) {
+            Item item = fallingItems.get(i);
+            item.getRect(tmpRectObj);
+            if(tmpRectObj.top > game.getFrameBufferHeight()) {
+                fallingItems.remove(i);
+                remove(item);
+                continue;
+            }
+
+            if(!tmpRectPaddle.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom))
+                continue;
+            remove(item);
+            fallingItems.remove(i);
+
+            Assets assets = Assets.getInstance();
+            if(item.frame == assets.itemSlowBall) {
+                for(Ball ball : balls)
+                    ball.setVelocity(ball.getVelocity() * (1 - 0.4f * ballSlowEffect));
+                ballSlowEffect *= 0.6f;
+            }
+        }
+    }
+
     @Override
     protected void update(GameTime gameTime) {
         super.update(gameTime);
         checkWallCollisions();
         checkBrickCollisions();
         checkPaddleCollisions();
+        checkFallingItems();
     }
 
     @Override

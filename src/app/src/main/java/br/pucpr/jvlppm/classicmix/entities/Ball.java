@@ -77,4 +77,12 @@ public class Ball extends GameEntity {
         this.velocity.dx = vx;
         this.velocity.dy = vy;
     }
+
+    public float getVelocity() {
+        return velocity.getLength();
+    }
+
+    public void setVelocity(float speed) {
+        this.velocity.setLength(speed);
+    }
 }

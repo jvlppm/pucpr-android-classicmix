@@ -10,6 +10,7 @@ public class Brick extends GameEntity {
     public float x, y;
     public int strength;
     private Frame brickFrame, reinforcementFrame, shadowFrame;
+    public char itemCode;
 
     public Brick(Frame frame, int strength) {
         this.strength = strength;

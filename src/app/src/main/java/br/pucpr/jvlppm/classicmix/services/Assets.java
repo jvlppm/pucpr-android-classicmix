@@ -50,6 +50,10 @@ public class Assets {
     public Frame msgGameOver;
     public Frame msgMoveToBegin;
     public Frame lifeIndicator;
+    public Frame itemEnlarge;
+    public Frame itemLaser;
+    public Frame itemPierce;
+    public Frame itemSlowBall;
 
     private Assets() {
         listeners = new ArrayList<LoadListener>();

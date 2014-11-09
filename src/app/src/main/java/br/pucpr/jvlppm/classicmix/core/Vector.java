@@ -17,12 +17,20 @@ public class Vector {
     }
 
     public void setLength(float length) {
-        normalize();
-        dx *= length;
-        dy *= length;
+        if(length == 0) {
+            dx = 0;
+            dy = 0;
+        }
+        else {
+            normalize();
+            dx *= length;
+            dy *= length;
+        }
     }
 
     public void normalize() {
+        if(dx == 0 && dy == 0)
+            return;
         float length = getLength();
         dx /= length;
         dy /= length;
