@@ -7,7 +7,7 @@ import br.pucpr.jvlppm.classicmix.core.GameScreen;
 import br.pucpr.jvlppm.classicmix.core.GameView;
 import br.pucpr.jvlppm.classicmix.screens.GamePlayScreen;
 
-public class ClassicMixActivity extends GameActivity {
+public class GamePlayActivity extends GameActivity {
     @Override
     protected GameView createGameView() {
         return new GameView(this, 512, 720);

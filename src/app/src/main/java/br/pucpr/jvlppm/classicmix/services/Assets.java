@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import br.pucpr.jvlppm.classicmix.core.Frame;
 
@@ -54,16 +56,22 @@ public class Assets {
     public Frame itemLaser;
     public Frame itemPierce;
     public Frame itemSlowBall;
+    public Frame background1;
+
+    public final Map<String, Frame> byName;
 
     private Assets() {
         listeners = new ArrayList<LoadListener>();
+        byName = new HashMap<String, Frame>();
     }
 
     private void loadAssets(Context context) {
         for(Field field : getClass().getDeclaredFields()) {
             if(field.getType().getSimpleName().equals("Frame")) {
                 try {
-                    field.set(this, loadFrame(context, field.getName() + ".png"));
+                    Frame frame = loadFrame(context, field.getName() + ".png");
+                    field.set(this, frame);
+                    byName.put(field.getName(), frame);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }

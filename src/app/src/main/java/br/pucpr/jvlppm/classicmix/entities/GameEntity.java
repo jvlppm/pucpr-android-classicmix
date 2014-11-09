@@ -22,12 +22,16 @@ public class GameEntity {
     }
 
     protected void draw(Canvas canvas, Frame frame, float x, float y, float originX, float originY) {
+        draw(canvas, frame, x, y, originX, originY, 1);
+    }
+
+    protected void draw(Canvas canvas, Frame frame, float x, float y, float originX, float originY, float scale) {
         if(frame == null)
             return;
-        float drawW = frame.rect.width();
-        float drawH = frame.rect.height();
-        float drawX = x - drawW * originX;
-        float drawY = y - drawH * originY;
+        float drawW = frame.rect.width() * scale;
+        float drawH = frame.rect.height() * scale;
+        float drawX = x - drawW * originX * scale;
+        float drawY = y - drawH * originY * scale;
 
         tmpRect.set((int)drawX, (int)drawY, (int)(drawX + drawW), (int)(drawY + drawH));
         canvas.drawBitmap(frame.texture, frame.rect, tmpRect, null);

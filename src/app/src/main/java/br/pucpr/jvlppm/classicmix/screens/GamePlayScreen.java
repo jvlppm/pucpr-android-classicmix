@@ -19,6 +19,7 @@ import br.pucpr.jvlppm.classicmix.core.GameScreen;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.TouchEvent;
 import br.pucpr.jvlppm.classicmix.core.Vector;
+import br.pucpr.jvlppm.classicmix.entities.Background;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.CenterMessage;
@@ -30,8 +31,9 @@ import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class GamePlayScreen extends GameScreen {
     private static enum State { WAITING, PLAYING, GAME_OVER };
-    private final static int LAYER_WORLD = 0;
-    private final static int LAYER_GUI = 1;
+    private final static int LAYER_BACKGROUND = 0;
+    private final static int LAYER_WORLD = 1;
+    private final static int LAYER_GUI = 2;
 
     static final String Tag = "GamePlayScreen";
 
@@ -41,6 +43,8 @@ public class GamePlayScreen extends GameScreen {
     private final List<Ball> balls;
     private final List<Brick> bricks;
     private final List<Item> fallingItems;
+    private Background currentBackground;
+
     private final CenterMessage msgMoveToBegin, msgGameOver;
     private final Rect tmpRectPaddle, tmpRectObj;
     private final Vector tmpVector;
@@ -95,6 +99,7 @@ public class GamePlayScreen extends GameScreen {
         resetItems();
         removeFallingItems();
         loadLevelData(level);
+        setBackground(level);
     }
 
     private void setState(State state) {
@@ -184,6 +189,17 @@ public class GamePlayScreen extends GameScreen {
         add(bEntity, LAYER_WORLD);
         bEntity.itemCode = item;
         bricks.add(bEntity);
+    }
+
+    private void setBackground(int level) {
+        Frame backgroundImage = Assets.getInstance().byName.get("background" + (level + 1));
+        if (backgroundImage != null) {
+            Background background = new Background(
+                    backgroundImage,
+                    game.getFrameBufferWidth(),
+                    game.getFrameBufferHeight());
+            add(background, LAYER_BACKGROUND);
+        }
     }
 
     private void loseLife() {

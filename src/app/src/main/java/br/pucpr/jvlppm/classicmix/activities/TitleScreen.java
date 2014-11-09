@@ -25,7 +25,7 @@ public class TitleScreen extends Activity implements Assets.LoadListener {
     }
 
     public void onClickPlay(View view) {
-        Intent intent = new Intent(this, ClassicMixActivity.class);
+        Intent intent = new Intent(this, GamePlayActivity.class);
         startActivity(intent);
     }
 

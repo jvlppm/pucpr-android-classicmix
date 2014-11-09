@@ -33,7 +33,7 @@
             android:screenOrientation="portrait"
             android:allowBackup="true"
             android:icon="@drawable/ic_launcher"
-            android:name=".activities.ClassicMixActivity"
+            android:name=".activities.GamePlayActivity"
             android:theme="@style/AppTheme"/>
     </application>
 
