@@ -30,6 +30,8 @@ import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class GamePlayScreen extends GameScreen {
     private static enum State { WAITING, PLAYING, GAME_OVER };
+    private final static int LAYER_WORLD = 0;
+    private final static int LAYER_GUI = 1;
 
     static final String Tag = "GamePlayScreen";
 
@@ -59,14 +61,14 @@ public class GamePlayScreen extends GameScreen {
         super(game, finishListener);
 
         score = new Score();
-        add(score);
+        add(score, LAYER_GUI);
 
         lifeCounter = new ExtraLifeCounter();
         lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight());
-        add(lifeCounter);
+        add(lifeCounter, LAYER_GUI);
 
         paddle = new Paddle();
-        add(paddle);
+        add(paddle, LAYER_WORLD);
         balls = new ArrayList<Ball>();
         bricks = new ArrayList<Brick>();
         fallingItems = new ArrayList<Item>();
@@ -102,21 +104,21 @@ public class GamePlayScreen extends GameScreen {
         if(this.state != null) {
             switch (this.state) {
                 case WAITING:
-                    remove(msgMoveToBegin);
+                    remove(msgMoveToBegin, LAYER_GUI);
                     break;
                 case GAME_OVER:
-                    remove(msgGameOver);
+                    remove(msgGameOver, LAYER_GUI);
                     break;
             }
         }
 
         switch (state) {
-            case WAITING: add(msgMoveToBegin); break;
+            case WAITING: add(msgMoveToBegin, LAYER_GUI); break;
             case PLAYING:
                 startBallMovement();
-                remove(msgMoveToBegin);
+                remove(msgMoveToBegin, LAYER_GUI);
                 break;
-            case GAME_OVER: add(msgGameOver); break;
+            case GAME_OVER: add(msgGameOver, LAYER_GUI); break;
         }
         this.state = state;
     }
@@ -129,7 +131,7 @@ public class GamePlayScreen extends GameScreen {
 
     private void loadLevelData(int level) {
         for(Brick brick : bricks)
-            remove(brick);
+            remove(brick, LAYER_WORLD);
         bricks.clear();
 
         AssetManager am = game.getAssets();
@@ -179,7 +181,7 @@ public class GamePlayScreen extends GameScreen {
         Brick bEntity = new Brick(frame, strength);
         bEntity.x = col * frame.rect.width() + frame.rect.width() / 2;
         bEntity.y = row * frame.rect.height() + frame.rect.height() / 2;
-        add(bEntity);
+        add(bEntity, LAYER_WORLD);
         bEntity.itemCode = item;
         bricks.add(bEntity);
     }
@@ -193,20 +195,20 @@ public class GamePlayScreen extends GameScreen {
 
     private void resetBall() {
         for(Ball ball : balls)
-            remove(ball);
+            remove(ball, LAYER_WORLD);
         balls.clear();
 
         Ball ball = new Ball();
         ball.x = game.getFrameBufferWidth() / 2;
         ball.y = game.getFrameBufferHeight() * 0.6f;
         balls.add(ball);
-        add(ball);
+        add(ball, LAYER_WORLD);
         setState(State.WAITING);
     }
 
     private void removeFallingItems() {
         for(Item item : fallingItems) {
-            remove(item);
+            remove(item, LAYER_WORLD);
         }
         fallingItems.clear();
     }
@@ -276,7 +278,7 @@ public class GamePlayScreen extends GameScreen {
                         ball.onBrickCollision(brick, tmpRectObj, tmpRectPaddle);
 
                     if (brick.strength <= 0) {
-                        remove(brick);
+                        remove(brick, LAYER_WORLD);
                         dropItems(brick);
                         bricks.remove(i);
                         score.add(100);
@@ -309,7 +311,7 @@ public class GamePlayScreen extends GameScreen {
         }
 
         Item item = new Item(frame, brick.x, brick.y);
-        add(item);
+        add(item, LAYER_WORLD);
         fallingItems.add(item);
     }
 
@@ -346,13 +348,13 @@ public class GamePlayScreen extends GameScreen {
             item.getRect(tmpRectObj);
             if(tmpRectObj.top > game.getFrameBufferHeight()) {
                 fallingItems.remove(i);
-                remove(item);
+                remove(item, LAYER_WORLD);
                 continue;
             }
 
             if(!tmpRectPaddle.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom))
                 continue;
-            remove(item);
+            remove(item, LAYER_WORLD);
             fallingItems.remove(i);
 
             Assets assets = Assets.getInstance();
@@ -369,7 +371,7 @@ public class GamePlayScreen extends GameScreen {
 
     private void destroyBall(Ball ball) {
         balls.remove(ball);
-        remove(ball);
+        remove(ball, LAYER_WORLD);
         if(balls.isEmpty()) {
             if(lifeCounter.getExtraLives() > 0) {
                 loseLife();
