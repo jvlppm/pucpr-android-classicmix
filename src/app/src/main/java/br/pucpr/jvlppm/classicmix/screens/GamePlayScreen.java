@@ -51,6 +51,7 @@ public class GamePlayScreen extends GameScreen {
     private float brickRadiusX, brickRadiusY;
 
     private float ballSlowEffect;
+    private boolean piercing;
 
     private State state;
 
@@ -89,6 +90,7 @@ public class GamePlayScreen extends GameScreen {
     void startLevel(int level) {
         currentLevel = level;
         resetBall();
+        resetItems();
         removeFallingItems();
         loadLevelData(level);
     }
@@ -182,18 +184,11 @@ public class GamePlayScreen extends GameScreen {
         bricks.add(bEntity);
     }
 
-    private void destroyBall(Ball ball) {
-        balls.remove(ball);
-        remove(ball);
-        if(balls.isEmpty()) {
-            if(lifeCounter.getExtraLives() > 0) {
-                lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
-                removeFallingItems();
-                resetBall();
-            }
-            else
-                setState(State.GAME_OVER);
-        }
+    private void loseLife() {
+        lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
+        removeFallingItems();
+        resetItems();
+        resetBall();
     }
 
     private void resetBall() {
@@ -207,8 +202,6 @@ public class GamePlayScreen extends GameScreen {
         balls.add(ball);
         add(ball);
         setState(State.WAITING);
-
-        ballSlowEffect = 1;
     }
 
     private void removeFallingItems() {
@@ -216,6 +209,11 @@ public class GamePlayScreen extends GameScreen {
             remove(item);
         }
         fallingItems.clear();
+    }
+
+    private void resetItems() {
+        ballSlowEffect = 1;
+        piercing = false;
     }
 
     private void reset() {
@@ -269,8 +267,13 @@ public class GamePlayScreen extends GameScreen {
                         (int) (brick.y + brickRadiusY));
 
                 if(tmpRectObj.intersects(tmpRectPaddle.left, tmpRectPaddle.top, tmpRectPaddle.right, tmpRectPaddle.bottom)) {
-                    ball.onBrickCollision(brick, tmpRectObj, tmpRectPaddle);
-                    score.add(30);
+                    if(brick.strength > 1)
+                        score.add(30);
+
+                    if(piercing)
+                        brick.strength = 0;
+                    else
+                        ball.onBrickCollision(brick, tmpRectObj, tmpRectPaddle);
 
                     if (brick.strength <= 0) {
                         remove(brick);
@@ -358,6 +361,21 @@ public class GamePlayScreen extends GameScreen {
                     ball.setVelocity(ball.getVelocity() * (1 - 0.4f * ballSlowEffect));
                 ballSlowEffect *= 0.6f;
             }
+            else if(item.frame == assets.itemPierce) {
+                piercing = true;
+            }
+        }
+    }
+
+    private void destroyBall(Ball ball) {
+        balls.remove(ball);
+        remove(ball);
+        if(balls.isEmpty()) {
+            if(lifeCounter.getExtraLives() > 0) {
+                loseLife();
+            }
+            else
+                setState(State.GAME_OVER);
         }
     }
 
