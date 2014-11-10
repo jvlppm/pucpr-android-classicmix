@@ -3,7 +3,7 @@ package br.pucpr.jvlppm.classicmix.activities;
 import android.os.Bundle;
 
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
-import br.pucpr.jvlppm.classicmix.core.GameScreen;
+import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.GameView;
 import br.pucpr.jvlppm.classicmix.screens.GamePlayScreen;
 
@@ -17,7 +17,7 @@ public class GamePlayActivity extends GameActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setCurrentScreen(new GamePlayScreen(this, new GameScreen.FinishListener() {
+        setCurrentScreen(new GamePlayScreen(this, new Scene.FinishListener() {
             @Override
             public void onFinished(Object result) {
                 finish();

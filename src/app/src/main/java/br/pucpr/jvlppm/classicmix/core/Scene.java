@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import br.pucpr.jvlppm.classicmix.entities.GameEntity;
 
-public class GameScreen <T> {
+public class Scene<T> {
     public void handleTouch(TouchEvent event) { }
 
     public static interface FinishListener<T> {
@@ -19,7 +19,7 @@ public class GameScreen <T> {
     private final FinishListener<T> finishListener;
     private final TreeMap<Integer, List<GameEntity>> entities;
 
-    public GameScreen(GameActivity game, FinishListener<T> finishListener) {
+    public Scene(GameActivity game, FinishListener<T> finishListener) {
         this.game = game;
         this.finishListener = finishListener;
         entities = new TreeMap<Integer, List<GameEntity>>();

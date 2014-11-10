@@ -15,7 +15,7 @@ public abstract class GameActivity extends Activity {
     private GameTime updateGameTime, drawGameTime;
     private GameView gameView;
     private Canvas gameViewCanvas;
-    private GameScreen currentScreen;
+    private Scene currentScreen;
     private final List<TouchEvent> unhandledTouches, handledTouches;
 
     protected GameActivity() {
@@ -30,7 +30,11 @@ public abstract class GameActivity extends Activity {
         requestFullScreen();
 
         updateGameTime = new GameTime();
+        updateGameTime.setMaxElapsedTime(0.05f);
+
         drawGameTime = new GameTime();
+        drawGameTime.setMaxElapsedTime(0.5f);
+
         setGameView(createGameView());
     }
 
@@ -118,7 +122,7 @@ public abstract class GameActivity extends Activity {
         }
     }
 
-    public void setCurrentScreen(GameScreen currentScreen) {
+    public void setCurrentScreen(Scene currentScreen) {
         this.currentScreen = currentScreen;
     }
 

@@ -15,7 +15,7 @@ import java.util.Random;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
-import br.pucpr.jvlppm.classicmix.core.GameScreen;
+import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.TouchEvent;
 import br.pucpr.jvlppm.classicmix.core.Vector;
@@ -29,7 +29,7 @@ import br.pucpr.jvlppm.classicmix.entities.Paddle;
 import br.pucpr.jvlppm.classicmix.entities.Score;
 import br.pucpr.jvlppm.classicmix.services.Assets;
 
-public class GamePlayScreen extends GameScreen {
+public class GamePlayScreen extends Scene {
     private static enum State { WAITING, PLAYING, GAME_OVER };
     private final static int LAYER_BACKGROUND = 0;
     private final static int LAYER_WORLD = 1;
