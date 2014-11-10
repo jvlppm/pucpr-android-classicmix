@@ -5,4 +5,15 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="highscore_difficulty_header">
+        <item name="android:paddingRight">30dp</item>
+        <item name="android:textSize">26sp</item>
+    </style>
+
+    <style name="highscore_difficulty_value">
+        <item name="android:paddingRight">30dp</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:textColor">@android:color/darker_gray</item>
+    </style>
+
 </resources>

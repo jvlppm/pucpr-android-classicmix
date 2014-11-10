@@ -15,6 +15,11 @@
         android:layout_weight="1">
 
         <TextView
+            android:textSize="38sp"
+            android:shadowColor="@android:color/darker_gray"
+            android:shadowRadius="8"
+            android:shadowDx="2"
+            android:shadowDy="2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -27,7 +32,7 @@
         android:layout_weight="0.5">
 
         <Button
-            android:id="@+id/playButton"
+            android:id="@+id/play_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -35,7 +40,7 @@
             android:onClick="onClickPlay"
             android:visibility="gone"/>
         <ProgressBar
-            android:id="@+id/loadProgress"
+            android:id="@+id/load_progress"
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,7 +56,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:text="@string/action_highscore"
+            android:onClick="onClickHighscore"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:text="@string/action_settings"
-            android:onClick="onClicksettings"/>
+            android:onClick="onClickSettings"/>
     </FrameLayout>
 </LinearLayout>

@@ -19,8 +19,13 @@ public class TitleScreen extends Activity implements Assets.LoadListener {
         Assets.getInstance().loadAssetsAsync(this, this);
     }
 
-    public void onClicksettings(View view) {
+    public void onClickSettings(View view) {
         Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    public void onClickHighscore(View view) {
+        Intent intent = new Intent(this, HighscoreActivity.class);
         startActivity(intent);
     }
 
@@ -31,9 +36,9 @@ public class TitleScreen extends Activity implements Assets.LoadListener {
 
     @Override
     public void onLoadCompleted() {
-        ProgressBar progress = (ProgressBar)findViewById(R.id.loadProgress);
+        ProgressBar progress = (ProgressBar)findViewById(R.id.load_progress);
         progress.setVisibility(View.GONE);
-        Button playButton = (Button)findViewById(R.id.playButton);
+        Button playButton = (Button)findViewById(R.id.play_button);
         playButton.setVisibility(View.VISIBLE);
     }
 }

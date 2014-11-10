@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">ClassicMix</string>
     <string name="action_play">Play</string>
+    <string name="action_highscore">Highscore</string>
     <string name="action_settings">Settings</string>
     <string name="settings_background_animations_summary">Enable background animations during gameplay.</string>
     <string name="settings_background_animations_title">Enable animations</string>
@@ -13,6 +15,7 @@
     <string name="settings_category_gameplay_summary">Gameplay configurations</string>
     <string name="settings_gameplay_difficulty_title">Difficulty</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_highscore">Highscore</string>
     <string name="settings_sound_music_volume_title">Music Volume</string>
     <string name="settings_sound_music_volume_message">Adjust the music volume.</string>
     <string name="settings_sound_effects_volume_title">Effects Volume</string>
@@ -21,6 +24,9 @@
     <string name="settings_category_sound_summary">Sound settings</string>
     <string name="settings_category_graphics">Graphics</string>
     <string name="settings_category_graphics_summary">Display settings</string>
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_normal">Normal</string>
+    <string name="difficulty_hard">Hard</string>
 
     <string-array name="settings_gameplay_difficulty_values">
         <item>0</item>
@@ -28,9 +34,9 @@
         <item>2</item>
     </string-array>
     <string-array name="settings_gameplay_difficulty_entries">
-        <item>Easy</item>
-        <item>Normal</item>
-        <item>Hard</item>
+        <item>@string/difficulty_easy</item>
+        <item>@string/difficulty_normal</item>
+        <item>@string/difficulty_hard</item>
     </string-array>
     <string-array name="settings_background_opacity_summaries">
         <item>Transparent</item>

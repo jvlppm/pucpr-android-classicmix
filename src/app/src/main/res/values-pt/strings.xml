@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">ClassicMix</string>
     <string name="action_play">Jogar</string>
+    <string name="action_highscore">Highscore</string>
     <string name="action_settings">Configurações</string>
     <string name="settings_background_animations_summary">Habilitar animações da imagem de fundo.</string>
     <string name="settings_background_animations_title">Habilitar animações</string>
@@ -13,6 +14,7 @@
     <string name="settings_category_gameplay_summary">Configurações de jogo</string>
     <string name="settings_gameplay_difficulty_title">Dificuldade</string>
     <string name="title_activity_settings">Configurações</string>
+    <string name="title_activity_highscore">Highscore</string>
     <string name="settings_sound_music_volume_title">Volume da música</string>
     <string name="settings_sound_music_volume_message">Ajuste o volume da música.</string>
     <string name="settings_sound_effects_volume_title">Volume dos efeitos</string>
@@ -21,12 +23,10 @@
     <string name="settings_category_sound_summary">Opções de Som</string>
     <string name="settings_category_graphics">Imagem</string>
     <string name="settings_category_graphics_summary">Opções de visualização</string>
+    <string name="difficulty_easy">Fácil</string>
+    <string name="difficulty_normal">Normal</string>
+    <string name="difficulty_hard">Difícil</string>
 
-    <string-array name="settings_gameplay_difficulty_entries">
-        <item>Fácil</item>
-        <item>Normal</item>
-        <item>Difícil</item>
-    </string-array>
     <string-array name="settings_background_opacity_summaries">
         <item>Transparente</item>
         <item>Translúcido</item>
