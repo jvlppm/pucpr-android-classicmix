@@ -16,6 +16,9 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean running;
     private Thread renderThread;
 
+    private long lastDrawDuration, lastDraw;
+    private final long maxRenderDelay = 1000000000 / 45;
+
     public GameView(GameActivity game, int width, int height) {
         super(game);
         this.game = game;
@@ -46,14 +49,33 @@ public class GameView extends SurfaceView implements Runnable {
         renderThread.start();
     }
 
+    float seconds(long nanoTime) {
+        return nanoTime / 1000000000.0f;
+    }
+
     @Override
     public void run() {
         Rect dstRect = new Rect();
-        while(running) {
+        long currentTime = System.nanoTime();
+        float pendingUpdate = 0;
+        float desiredUpdateTime = 0.01f;
+        while ( running )
+        {
             if(!holder.getSurface().isValid())
                 continue;
 
-            game.tick();
+            long newTime = System.nanoTime();
+            float frameTime = seconds(newTime - currentTime);
+            currentTime = newTime;
+
+            pendingUpdate += frameTime;
+
+            while (pendingUpdate >= desiredUpdateTime)
+            {
+                game.update();
+                pendingUpdate -= desiredUpdateTime;
+            }
+            game.draw();
 
             Canvas canvas = holder.lockCanvas();
             canvas.getClipBounds(dstRect);

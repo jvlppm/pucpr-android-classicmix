@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GameActivity extends Activity {
-    private GameTime gameTime;
+    private GameTime updateGameTime, drawGameTime;
     private GameView gameView;
     private Canvas gameViewCanvas;
     private GameScreen currentScreen;
@@ -29,7 +29,8 @@ public abstract class GameActivity extends Activity {
 
         requestFullScreen();
 
-        gameTime = new GameTime();
+        updateGameTime = new GameTime();
+        drawGameTime = new GameTime();
         setGameView(createGameView());
     }
 
@@ -48,7 +49,8 @@ public abstract class GameActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        gameTime.tick();
+        updateGameTime.tick();
+        drawGameTime.tick();
         gameView.resume();
     }
 
@@ -89,8 +91,8 @@ public abstract class GameActivity extends Activity {
         return new GameView(this, width, height);
     }
 
-    void tick() {
-        gameTime.tick();
+    void update() {
+        updateGameTime.tick();
 
         while(unhandledTouches.size() > 0) {
             TouchEvent touch;
@@ -104,8 +106,15 @@ public abstract class GameActivity extends Activity {
         }
 
         if(currentScreen != null) {
-            currentScreen.update(gameTime);
-            currentScreen.draw(gameTime, gameViewCanvas);
+            currentScreen.update(updateGameTime);
+        }
+    }
+
+    void draw() {
+        drawGameTime.tick();
+
+        if(currentScreen != null) {
+            currentScreen.draw(drawGameTime, gameViewCanvas);
         }
     }
 
