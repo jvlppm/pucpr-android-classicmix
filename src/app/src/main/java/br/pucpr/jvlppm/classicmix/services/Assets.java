@@ -56,7 +56,14 @@ public class Assets {
     public Frame itemLaser;
     public Frame itemPierce;
     public Frame itemSlowBall;
+    public Frame bottomBar;
     public Frame background1;
+    public Frame background2;
+    public Frame background3;
+    public Frame background4;
+    public Frame background5;
+    public Frame background6;
+    public Frame background7;
 
     public final Map<String, Frame> byName;
 

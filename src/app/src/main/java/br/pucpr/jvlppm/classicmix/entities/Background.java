@@ -1,6 +1,7 @@
 package br.pucpr.jvlppm.classicmix.entities;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 import br.pucpr.jvlppm.classicmix.core.Frame;
@@ -10,22 +11,24 @@ public class Background extends GameEntity {
     private static enum AnimationState { GOING_RIGHT, ZOOM_IN, GOING_LEFT_ZOOMED, ZOOM_OUT }
 
     private final Frame frame;
-    private final float screenZoom;
     private AnimationState state;
 
-    private final float moveSpeed, zoomInSpeed, zoomOutSpeed;
+    private final float moveSpeed, zoomInSpeed, zoomOutSpeed, fadeSpeed;
     private final float screenRadiusX, screenRadiusY;
     private final Rect srcRect, destRect;
+    private final Paint paint;
+    public float alpha = 1;
+//    private boolean fadeOut;
 
     private float xRatio, yRatio, zoomRatio;
 
     public Background(Frame frame, int screenWidth, int screenHeight) {
         this.frame = frame;
-        this.screenZoom = screenHeight / (float)frame.rect.height();
 
-        this.moveSpeed = 1 / 60f;
+        this.moveSpeed = 1 / 120f;
         this.zoomInSpeed = 1 / 10f;
         this.zoomOutSpeed = 1 / 2f;
+        this.fadeSpeed = 1 / 2f;
 
         this.screenRadiusX = screenWidth / 2;
         this.screenRadiusY = screenHeight / 2;
@@ -36,8 +39,16 @@ public class Background extends GameEntity {
         this.xRatio = 0;
         this.yRatio = 0.5f;
         this.zoomRatio = 0;
+        this.paint = new Paint();
         updateRect();
     }
+
+//    public void setPosition(float xRatio, float yRatio, float zoomRatio) {
+//        this.xRatio = xRatio;
+//        this.yRatio = yRatio;
+//        this.zoomRatio = zoomRatio;
+//        updateRect();
+//    }
 
     private void updateRect() {
         float minZoom = Math.max(
@@ -92,10 +103,32 @@ public class Background extends GameEntity {
                 break;
         }
         updateRect();
+
+        /*if (fadeOut)
+            alpha -= gameTime.getElapsedTime() * fadeSpeed;
+        else */if (alpha < 1) {
+            alpha += gameTime.getElapsedTime() * fadeSpeed;
+            if (alpha > 1)
+                alpha = 1;
+            paint.setAlpha((int)(alpha * 255));
+        }
     }
 
     @Override
     public void draw(GameTime gameTime, Canvas canvas) {
-        canvas.drawBitmap(frame.texture, srcRect, destRect, null);
+        canvas.drawBitmap(frame.texture, srcRect, destRect, paint);
+    }
+
+//    public void fadeOut() {
+//        this.fadeOut = true;
+//    }
+
+    public void fadeIn(Background oldBackground) {
+        this.alpha = 0;
+        paint.setAlpha(0);
+        state = oldBackground.state;
+        zoomRatio = oldBackground.zoomRatio;
+        xRatio = oldBackground.xRatio;
+        yRatio = oldBackground.yRatio;
     }
 }

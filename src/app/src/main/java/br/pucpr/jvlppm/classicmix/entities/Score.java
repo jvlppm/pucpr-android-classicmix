@@ -22,7 +22,7 @@ public class Score extends GameEntity {
         paint = new Paint();
         paint.setFlags(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(22);
-        paint.setShadowLayer(6, 2, 2, Color.BLACK);
+        paint.setShadowLayer(1, 1, 1, Color.WHITE);
         rectHiScore = new Rect();
         rectScore = new Rect();
         setHighScore(HighScore.getInstance().getHighScore());

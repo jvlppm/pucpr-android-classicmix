@@ -22,7 +22,7 @@ import br.pucpr.jvlppm.classicmix.core.Vector;
 import br.pucpr.jvlppm.classicmix.entities.Background;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
-import br.pucpr.jvlppm.classicmix.entities.CenterMessage;
+import br.pucpr.jvlppm.classicmix.entities.Image;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
 import br.pucpr.jvlppm.classicmix.entities.Item;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
@@ -44,8 +44,9 @@ public class GamePlayScreen extends GameScreen {
     private final List<Brick> bricks;
     private final List<Item> fallingItems;
     private Background currentBackground;
+    private Background oldBackground;
 
-    private final CenterMessage msgMoveToBegin, msgGameOver;
+    private final Image msgMoveToBegin, msgGameOver;
     private final Rect tmpRectPaddle, tmpRectObj;
     private final Vector tmpVector;
     private final Random random;
@@ -64,11 +65,14 @@ public class GamePlayScreen extends GameScreen {
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
 
+        Assets assets = Assets.getInstance();
+        add(new Image(assets.bottomBar, Image.Alignment.Bottom), LAYER_GUI);
+
         score = new Score();
         add(score, LAYER_GUI);
 
         lifeCounter = new ExtraLifeCounter();
-        lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight());
+        lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight() - 8);
         add(lifeCounter, LAYER_GUI);
 
         paddle = new Paddle();
@@ -77,12 +81,11 @@ public class GamePlayScreen extends GameScreen {
         bricks = new ArrayList<Brick>();
         fallingItems = new ArrayList<Item>();
 
-        Assets assets = Assets.getInstance();
         ballRadius = assets.ballBlue.texture.getWidth() / 2;
         brickRadiusX = assets.brickBlue.texture.getWidth() / 2;
         brickRadiusY = assets.brickBlue.texture.getHeight() / 2;
-        msgMoveToBegin = new CenterMessage(assets.msgMoveToBegin);
-        msgGameOver = new CenterMessage(assets.msgGameOver);
+        msgMoveToBegin = new Image(assets.msgMoveToBegin, Image.Alignment.Center);
+        msgGameOver = new Image(assets.msgGameOver, Image.Alignment.Center);
 
         tmpRectPaddle = new Rect();
         tmpRectObj = new Rect();
@@ -198,6 +201,13 @@ public class GamePlayScreen extends GameScreen {
                     backgroundImage,
                     game.getFrameBufferWidth(),
                     game.getFrameBufferHeight());
+
+            if(currentBackground != null) {
+                oldBackground = currentBackground;
+                background.fadeIn(oldBackground);
+            }
+
+            currentBackground = background;
             add(background, LAYER_BACKGROUND);
         }
     }
@@ -404,6 +414,14 @@ public class GamePlayScreen extends GameScreen {
         checkBrickCollisions();
         checkPaddleCollisions();
         checkFallingItems();
+        removeOldBackground();
+    }
+
+    private void removeOldBackground() {
+        if(oldBackground != null && currentBackground.alpha >= 1) {
+            remove(oldBackground, LAYER_BACKGROUND);
+            oldBackground = null;
+        }
     }
 
     @Override
