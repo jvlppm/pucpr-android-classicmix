@@ -17,19 +17,17 @@ public class HighScore {
 
     public static void init(Context context) {
         instance = new HighScore(context);
-        instance.highScore = context.getSharedPreferences("HighScore", 0).getInt("highScore", 0);
     }
 
     private Context context;
-    private int highScore;
 
-    public int getHighScore() {
-        return highScore;
+    public int getHighScore(Settings.Gameplay.Difficulty difficulty) {
+        return context.getSharedPreferences(difficulty.name(), 0)
+                .getInt("highScore", 0);
     }
 
-    public void setHighScore(int highScore) {
-        this.highScore = highScore;
-        context.getSharedPreferences("HighScore", 0)
+    public void setHighScore(Settings.Gameplay.Difficulty difficulty, int highScore) {
+        context.getSharedPreferences(difficulty.name(), 0)
                 .edit()
                 .putInt("highScore", highScore)
                 .commit();

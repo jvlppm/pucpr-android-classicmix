@@ -7,6 +7,7 @@ import android.graphics.Rect;
 
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.services.HighScore;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class Score extends GameEntity {
     private int score;
@@ -14,6 +15,7 @@ public class Score extends GameEntity {
 
     private String highScoreText;
     private String scoreText;
+    private final Settings.Gameplay.Difficulty difficulty;
 
     private final Paint paint;
     private final Rect rectHiScore, rectScore;
@@ -25,7 +27,8 @@ public class Score extends GameEntity {
         paint.setShadowLayer(1, 1, 1, Color.WHITE);
         rectHiScore = new Rect();
         rectScore = new Rect();
-        setHighScore(HighScore.getInstance().getHighScore());
+        difficulty = Settings.Gameplay.getDifficulty();
+        setHighScore(HighScore.getInstance().getHighScore(difficulty));
         setScore(0);
     }
 
@@ -38,7 +41,7 @@ public class Score extends GameEntity {
         highScoreText = "HI: " + score;
 
         paint.getTextBounds(highScoreText, 0, highScoreText.length(), rectHiScore);
-        HighScore.getInstance().setHighScore(score);
+        HighScore.getInstance().setHighScore(difficulty, score);
     }
 
     private void setScore(int score) {

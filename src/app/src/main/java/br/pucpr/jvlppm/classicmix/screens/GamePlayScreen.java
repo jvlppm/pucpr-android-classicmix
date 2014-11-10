@@ -28,6 +28,7 @@ import br.pucpr.jvlppm.classicmix.entities.Item;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
 import br.pucpr.jvlppm.classicmix.entities.Score;
 import br.pucpr.jvlppm.classicmix.services.Assets;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class GamePlayScreen extends Scene {
     private static enum State { WAITING, PLAYING, GAME_OVER };
@@ -37,6 +38,7 @@ public class GamePlayScreen extends Scene {
 
     static final String Tag = "GamePlayScreen";
 
+    // Game Objects
     private final Score score;
     private final ExtraLifeCounter lifeCounter;
     private final Paddle paddle;
@@ -45,22 +47,29 @@ public class GamePlayScreen extends Scene {
     private final List<Item> fallingItems;
     private Background currentBackground;
     private Background oldBackground;
+    private final Image msgMoveToBegin;
+    private final Image msgGameOver;
 
-    private final Image msgMoveToBegin, msgGameOver;
-    private final Rect tmpRectPaddle, tmpRectObj;
-    private final Vector tmpVector;
-    private final Random random;
+    // Game Objects info
+    private final float ballRadius;
+    private final float brickRadiusX, brickRadiusY;
 
-    private int currentLevel;
+    // Difficulty modifiers
+    private final float defaultBallSpeed;
+    private final int defaultLives;
+    private final float defaultScoreMultiplier;
 
-    private int trackTouchId;
-    private float ballRadius;
-    private float brickRadiusX, brickRadiusY;
-
-    private float ballSlowEffect;
-    private boolean piercing;
-
+    // Game State
     private State state;
+    private int currentLevel;
+    private boolean piercing;
+    private float ballSlowEffect;
+    private int trackTouchId;
+
+    // Auxiliar objects
+    private final Random random;
+    private final Vector tmpVector;
+    private final Rect tmpRectPaddle, tmpRectObj;
 
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
@@ -92,6 +101,24 @@ public class GamePlayScreen extends Scene {
         tmpVector = new Vector();
 
         random = new Random(System.nanoTime());
+
+        switch (Settings.Gameplay.getDifficulty()) {
+            case Easy:
+                defaultLives = 5;
+                defaultBallSpeed = 300;
+                defaultScoreMultiplier = 0.5f;
+                break;
+            case Hard:
+                defaultBallSpeed = 600;
+                defaultLives = 2;
+                defaultScoreMultiplier = 1.2f;
+                break;
+            default:
+                defaultBallSpeed = 500;
+                defaultLives = 3;
+                defaultScoreMultiplier = 1f;
+                break;
+        }
 
         reset();
     }
@@ -247,7 +274,7 @@ public class GamePlayScreen extends Scene {
 
     private void reset() {
         score.reset();
-        lifeCounter.setExtraLives(3);
+        lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
         startLevel(0);
     }
@@ -261,7 +288,7 @@ public class GamePlayScreen extends Scene {
 
             tmpVector.dx = targetX - ball.x;
             tmpVector.dy = targetY - ball.y;
-            tmpVector.setLength(500);
+            tmpVector.setLength(defaultBallSpeed);
             ball.setVelocity(tmpVector.dx, tmpVector.dy);
         }
     }
@@ -297,7 +324,7 @@ public class GamePlayScreen extends Scene {
 
                 if(tmpRectObj.intersects(tmpRectPaddle.left, tmpRectPaddle.top, tmpRectPaddle.right, tmpRectPaddle.bottom)) {
                     if(brick.strength > 1)
-                        score.add(30);
+                        score.add((int)(30 * defaultScoreMultiplier));
 
                     if(piercing)
                         brick.strength = 0;
@@ -308,7 +335,7 @@ public class GamePlayScreen extends Scene {
                         remove(brick, LAYER_WORLD);
                         dropItems(brick);
                         bricks.remove(i);
-                        score.add(100);
+                        score.add((int)(100 * defaultScoreMultiplier));
                     }
                 }
             }
