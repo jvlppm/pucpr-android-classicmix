@@ -358,9 +358,10 @@ public class GamePlayScreen extends GameScreen {
             float speed = tmpVector.getLength();
             float position = (ball.x - tmpRectPaddle.left) / tmpRectPaddle.width();
             float variation = random.nextFloat() * 0.1f - 0.05f;
+            position = position * 0.95f + variation;
 
-            float degrees = 180 - (position * 0.95f + variation) * 180;
-            degrees = Math.min(160, Math.max(20, degrees));
+            float degrees = (1 - position) * 180;
+            degrees = Math.min(135, Math.max(45, degrees));
             Vector.fromDegrees(degrees, tmpVector);
             ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
         }
