@@ -205,6 +205,7 @@ public class GamePlayScreen extends Scene {
             if(currentBackground != null) {
                 oldBackground = currentBackground;
                 background.fadeIn(oldBackground);
+                oldBackground.fadeOut();
             }
 
             currentBackground = background;
@@ -418,7 +419,7 @@ public class GamePlayScreen extends Scene {
     }
 
     private void removeOldBackground() {
-        if(oldBackground != null && currentBackground.alpha >= 1) {
+        if(oldBackground != null && oldBackground.alpha <= 0) {
             remove(oldBackground, LAYER_BACKGROUND);
             oldBackground = null;
         }
@@ -426,7 +427,7 @@ public class GamePlayScreen extends Scene {
 
     @Override
     protected void draw(GameTime gameTime, Canvas canvas) {
-        canvas.drawARGB(255, 255, 0, 0);
+        canvas.drawARGB(255, 255, 255, 255);
         super.draw(gameTime, canvas);
     }
 

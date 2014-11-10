@@ -6,9 +6,10 @@ import android.graphics.Rect;
 
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class Background extends GameEntity {
-    private static enum AnimationState { GOING_RIGHT, ZOOM_IN, GOING_LEFT_ZOOMED, ZOOM_OUT }
+    private static enum AnimationState {GOING_RIGHT, ZOOM_IN, GOING_LEFT_ZOOMED, ZOOM_OUT}
 
     private final Frame frame;
     private AnimationState state;
@@ -18,7 +19,9 @@ public class Background extends GameEntity {
     private final Rect srcRect, destRect;
     private final Paint paint;
     public float alpha = 1;
-//    private boolean fadeOut;
+    public final float maxAlpha;
+    private final boolean animationsEnabled;
+    private boolean fadeIn, fadeOut;
 
     private float xRatio, yRatio, zoomRatio;
 
@@ -40,23 +43,29 @@ public class Background extends GameEntity {
         this.yRatio = 0.5f;
         this.zoomRatio = 0;
         this.paint = new Paint();
+        alpha = maxAlpha = Settings.Graphics.getBackgroundOpacity();
+        this.paint.setAlpha((int) (alpha * 255));
         updateRect();
+
+        animationsEnabled = Settings.Graphics.areBackgroundAnimationsEnabled();
+        if (!animationsEnabled)
+            setPosition(0.5f, 0.5f, 1);
     }
 
-//    public void setPosition(float xRatio, float yRatio, float zoomRatio) {
-//        this.xRatio = xRatio;
-//        this.yRatio = yRatio;
-//        this.zoomRatio = zoomRatio;
-//        updateRect();
-//    }
+    public void setPosition(float xRatio, float yRatio, float zoomRatio) {
+        this.xRatio = xRatio;
+        this.yRatio = yRatio;
+        this.zoomRatio = zoomRatio;
+        updateRect();
+    }
 
     private void updateRect() {
         float minZoom = Math.max(
                 screenRadiusY / (frame.rect.height() / 2),
                 screenRadiusX / (frame.rect.width() / 2)
-                );
+        );
         float maxZoom = minZoom * 1.3f;
-        float zoom = (maxZoom - minZoom)  * zoomRatio + minZoom;
+        float zoom = (maxZoom - minZoom) * zoomRatio + minZoom;
 
         float radiusX = screenRadiusX / zoom;
         float radiusY = screenRadiusY / zoom;
@@ -67,11 +76,37 @@ public class Background extends GameEntity {
         float yMax = frame.rect.height() - radiusY;
         float y = (yMax - radiusY) * yRatio + radiusY;
 
-        srcRect.set((int)(x - radiusX), (int)(y - radiusY), (int)(x + radiusX), (int)(y +radiusY));
+        srcRect.set((int) (x - radiusX), (int) (y - radiusY), (int) (x + radiusX), (int) (y + radiusY));
     }
 
     @Override
     public void update(GameTime gameTime) {
+        if(fadeIn || fadeOut) {
+            if (fadeIn) {
+                if(animationsEnabled)
+                    alpha += gameTime.getElapsedTime() * fadeSpeed;
+                else alpha = maxAlpha;
+
+                if (alpha >= maxAlpha) {
+                    alpha = maxAlpha;
+                    fadeIn = false;
+                }
+
+            } else {
+                if(animationsEnabled)
+                    alpha -= gameTime.getElapsedTime() * fadeSpeed;
+                else alpha = 0;
+
+                if (alpha <= 0) {
+                    alpha = 0;
+                    fadeOut = false;
+                }
+            }
+            paint.setAlpha((int) (alpha * 255));
+        }
+        if(!animationsEnabled)
+            return;
+
         switch (state) {
             case GOING_RIGHT:
                 xRatio += gameTime.getElapsedTime() * moveSpeed;
@@ -82,7 +117,7 @@ public class Background extends GameEntity {
                 break;
             case ZOOM_IN:
                 zoomRatio += gameTime.getElapsedTime() * zoomInSpeed;
-                if(zoomRatio >= 1) {
+                if (zoomRatio >= 1) {
                     zoomRatio = 1;
                     state = AnimationState.GOING_LEFT_ZOOMED;
                 }
@@ -96,22 +131,13 @@ public class Background extends GameEntity {
                 break;
             case ZOOM_OUT:
                 zoomRatio -= gameTime.getElapsedTime() * zoomOutSpeed;
-                if(zoomRatio <= 0) {
+                if (zoomRatio <= 0) {
                     zoomRatio = 0;
                     state = AnimationState.GOING_RIGHT;
                 }
                 break;
         }
         updateRect();
-
-        /*if (fadeOut)
-            alpha -= gameTime.getElapsedTime() * fadeSpeed;
-        else */if (alpha < 1) {
-            alpha += gameTime.getElapsedTime() * fadeSpeed;
-            if (alpha > 1)
-                alpha = 1;
-            paint.setAlpha((int)(alpha * 255));
-        }
     }
 
     @Override
@@ -119,16 +145,17 @@ public class Background extends GameEntity {
         canvas.drawBitmap(frame.texture, srcRect, destRect, paint);
     }
 
-//    public void fadeOut() {
-//        this.fadeOut = true;
-//    }
-
     public void fadeIn(Background oldBackground) {
+        fadeIn = true;
         this.alpha = 0;
         paint.setAlpha(0);
         state = oldBackground.state;
         zoomRatio = oldBackground.zoomRatio;
         xRatio = oldBackground.xRatio;
         yRatio = oldBackground.yRatio;
+    }
+
+    public void fadeOut() {
+        fadeOut = true;
     }
 }
