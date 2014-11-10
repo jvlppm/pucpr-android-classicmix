@@ -345,8 +345,7 @@ public class GamePlayScreen extends Scene {
         paddle.getRect(tmpRectPaddle);
 
         for (Ball ball : balls) {
-            if(ball.y > paddle.getY() ||
-               !tmpRectPaddle.intersects(
+            if(!tmpRectPaddle.intersects(
                     (int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
