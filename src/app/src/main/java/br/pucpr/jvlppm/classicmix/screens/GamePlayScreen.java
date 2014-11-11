@@ -15,16 +15,18 @@ import java.util.Random;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
-import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
+import br.pucpr.jvlppm.classicmix.core.Pool;
+import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.TouchEvent;
 import br.pucpr.jvlppm.classicmix.core.Vector;
 import br.pucpr.jvlppm.classicmix.entities.Background;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
-import br.pucpr.jvlppm.classicmix.entities.Image;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
+import br.pucpr.jvlppm.classicmix.entities.Image;
 import br.pucpr.jvlppm.classicmix.entities.Item;
+import br.pucpr.jvlppm.classicmix.entities.Laser;
 import br.pucpr.jvlppm.classicmix.entities.Paddle;
 import br.pucpr.jvlppm.classicmix.entities.Score;
 import br.pucpr.jvlppm.classicmix.services.Assets;
@@ -45,6 +47,7 @@ public class GamePlayScreen extends Scene {
     private final List<Ball> balls;
     private final List<Brick> bricks;
     private final List<Item> fallingItems;
+    private final Pool<Laser> lasers;
     private Background currentBackground;
     private Background oldBackground;
     private final Image msgMoveToBegin;
@@ -59,17 +62,22 @@ public class GamePlayScreen extends Scene {
     private final int defaultLives;
     private final float defaultScoreMultiplier;
 
+    // Constants
+    private final float laserDelay = 1;
+
     // Game State
     private State state;
     private int currentLevel;
     private boolean piercing;
     private float ballSlowEffect;
     private int trackTouchId;
+    public boolean shootingLaser;
+    private float timeToLaser;
 
     // Auxiliar objects
     private final Random random;
     private final Vector tmpVector;
-    private final Rect tmpRectPaddle, tmpRectObj;
+    private final Rect tmpRect2, tmpRect1;
 
     public GamePlayScreen(GameActivity game, FinishListener finishListener) {
         super(game, finishListener);
@@ -89,6 +97,7 @@ public class GamePlayScreen extends Scene {
         balls = new ArrayList<Ball>();
         bricks = new ArrayList<Brick>();
         fallingItems = new ArrayList<Item>();
+        lasers = new Pool<Laser>(Laser.class);
 
         ballRadius = assets.ballBlue.texture.getWidth() / 2;
         brickRadiusX = assets.brickBlue.texture.getWidth() / 2;
@@ -96,8 +105,8 @@ public class GamePlayScreen extends Scene {
         msgMoveToBegin = new Image(assets.msgMoveToBegin, Image.Alignment.Center);
         msgGameOver = new Image(assets.msgGameOver, Image.Alignment.Center);
 
-        tmpRectPaddle = new Rect();
-        tmpRectObj = new Rect();
+        tmpRect2 = new Rect();
+        tmpRect1 = new Rect();
         tmpVector = new Vector();
 
         random = new Random(System.nanoTime());
@@ -128,6 +137,7 @@ public class GamePlayScreen extends Scene {
         resetBall();
         resetItems();
         removeFallingItems();
+        removeLasers();
         loadLevelData(level);
         setBackground(level);
     }
@@ -222,7 +232,10 @@ public class GamePlayScreen extends Scene {
     }
 
     private void setBackground(int level) {
-        Frame backgroundImage = Assets.getInstance().byName.get("background" + (level + 1));
+        List<Frame> backgrounds = Assets.getInstance().background;
+        if(level >= backgrounds.size())
+            level = 0;
+        Frame backgroundImage = backgrounds.get(level);
         if (backgroundImage != null) {
             Background background = new Background(
                     backgroundImage,
@@ -270,6 +283,7 @@ public class GamePlayScreen extends Scene {
     private void resetItems() {
         ballSlowEffect = 1;
         piercing = false;
+        shootingLaser = false;
     }
 
     private void reset() {
@@ -280,11 +294,11 @@ public class GamePlayScreen extends Scene {
     }
 
     private void startBallMovement() {
-        paddle.getRect(tmpRectPaddle);
+        paddle.getRect(tmpRect2);
 
         for(Ball ball : balls) {
-            float targetX = tmpRectPaddle.left + (random.nextFloat() * 0.2f + 0.4f) * tmpRectPaddle.width();
-            float targetY = tmpRectPaddle.top;
+            float targetX = tmpRect2.left + (random.nextFloat() * 0.2f + 0.4f) * tmpRect2.width();
+            float targetY = tmpRect2.top;
 
             tmpVector.dx = targetX - ball.x;
             tmpVector.dy = targetY - ball.y;
@@ -310,39 +324,43 @@ public class GamePlayScreen extends Scene {
 
     private void checkBrickCollisions() {
         for(Ball ball : balls) {
-            tmpRectObj.set((int) (ball.x - ballRadius),
+            tmpRect1.set((int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
                     (int) (ball.y + ballRadius));
             for(int i = bricks.size() - 1; i >= 0; i--) {
                 Brick brick = bricks.get(i);
-                tmpRectPaddle.set(
+                tmpRect2.set(
                         (int) (brick.x - brickRadiusX),
                         (int) (brick.y - brickRadiusY),
                         (int) (brick.x + brickRadiusX),
                         (int) (brick.y + brickRadiusY));
 
-                if(tmpRectObj.intersects(tmpRectPaddle.left, tmpRectPaddle.top, tmpRectPaddle.right, tmpRectPaddle.bottom)) {
-                    if(brick.strength > 1)
-                        score.add((int)(30 * defaultScoreMultiplier));
-
+                if(tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
                     if(piercing)
                         brick.strength = 0;
                     else
-                        ball.onBrickCollision(brick, tmpRectObj, tmpRectPaddle);
-
-                    if (brick.strength <= 0) {
-                        remove(brick, LAYER_WORLD);
-                        dropItems(brick);
-                        bricks.remove(i);
-                        score.add((int)(100 * defaultScoreMultiplier));
-                    }
+                        ball.onBrickCollision(brick, tmpRect1, tmpRect2);
+                    hitBrick(brick);
                 }
             }
         }
 
         if(bricks.size() <= 0) {
             startLevel(currentLevel + 1);
+        }
+    }
+
+    private void hitBrick(Brick brick) {
+        brick.strength--;
+        if(brick.strength > 1)
+            score.add((int)(30 * defaultScoreMultiplier));
+
+        if (brick.strength <= 0) {
+            remove(brick, LAYER_WORLD);
+            dropItems(brick);
+            bricks.remove(brick);
+            score.add((int)(100 * defaultScoreMultiplier));
         }
     }
 
@@ -370,10 +388,10 @@ public class GamePlayScreen extends Scene {
     }
 
     private void checkPaddleCollisions() {
-        paddle.getRect(tmpRectPaddle);
+        paddle.getRect(tmpRect2);
 
         for (Ball ball : balls) {
-            if(!tmpRectPaddle.intersects(
+            if(!tmpRect2.intersects(
                     (int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
@@ -383,7 +401,7 @@ public class GamePlayScreen extends Scene {
             ball.getVelocity(tmpVector);
 
             float speed = tmpVector.getLength();
-            float position = (ball.x - tmpRectPaddle.left) / tmpRectPaddle.width();
+            float position = (ball.x - tmpRect2.left) / tmpRect2.width();
             float variation = random.nextFloat() * 0.1f - 0.05f;
             position = position * 0.95f + variation;
 
@@ -395,18 +413,18 @@ public class GamePlayScreen extends Scene {
     }
 
     private void checkFallingItems() {
-        paddle.getRect(tmpRectPaddle);
+        paddle.getRect(tmpRect2);
 
         for(int i = fallingItems.size() - 1; i >= 0; i--) {
             Item item = fallingItems.get(i);
-            item.getRect(tmpRectObj);
-            if(tmpRectObj.top > game.getFrameBufferHeight()) {
+            item.getRect(tmpRect1);
+            if(tmpRect1.top > game.getFrameBufferHeight()) {
                 fallingItems.remove(i);
                 remove(item, LAYER_WORLD);
                 continue;
             }
 
-            if(!tmpRectPaddle.intersects(tmpRectObj.left, tmpRectObj.top, tmpRectObj.right, tmpRectObj.bottom))
+            if(!tmpRect2.intersects(tmpRect1.left, tmpRect1.top, tmpRect1.right, tmpRect1.bottom))
                 continue;
             remove(item, LAYER_WORLD);
             fallingItems.remove(i);
@@ -419,6 +437,9 @@ public class GamePlayScreen extends Scene {
             }
             else if(item.frame == assets.itemPierce) {
                 piercing = true;
+            }
+            else if(item.frame == assets.itemLaser) {
+                shootingLaser = true;
             }
         }
     }
@@ -435,6 +456,55 @@ public class GamePlayScreen extends Scene {
         }
     }
 
+    private void createLaser(float x, float y) {
+        Laser laser = lasers.getNew();
+        laser.x = x;
+        laser.y = y;
+        add(laser, LAYER_WORLD);
+    }
+
+    private void updateLaserShot(GameTime gameTime) {
+        if(shootingLaser) {
+            timeToLaser -= gameTime.getElapsedTime();
+            if (timeToLaser <= 0) {
+                timeToLaser = laserDelay;
+                paddle.getRect(tmpRect1);
+                createLaser(tmpRect1.right - 8, paddle.getY());
+                createLaser(tmpRect1.left + 8, paddle.getY());
+            }
+        }
+        for(int li = lasers.inUse.size() - 1; li >= 0; li--) {
+            Laser laser = lasers.inUse.get(li);
+            if (laser.y < 0 || laser.destroyed()) {
+                remove(laser, LAYER_WORLD);
+                laser.reset();
+                lasers.remove(laser);
+            }
+
+            for(int bi = bricks.size() - 1; bi >= 0; bi--) {
+                Brick brick = bricks.get(bi);
+                tmpRect2.set(
+                        (int) (brick.x - brickRadiusX),
+                        (int) (brick.y - brickRadiusY),
+                        (int) (brick.x + brickRadiusX),
+                        (int) (brick.y + brickRadiusY));
+
+                if(tmpRect2.intersects((int)laser.x - 1, (int)laser.y - 4, (int)laser.x + 1, (int)laser.y + 8)) {
+                    hitBrick(brick);
+                    laser.onHit();
+                }
+            }
+        }
+    }
+
+    private void removeLasers() {
+        for(int i = lasers.inUse.size() - 1; i >= 0; i--) {
+            Laser laser = lasers.inUse.get(i);
+            lasers.remove(laser);
+            remove(laser, LAYER_WORLD);
+        }
+    }
+
     @Override
     protected void update(GameTime gameTime) {
         super.update(gameTime);
@@ -443,6 +513,7 @@ public class GamePlayScreen extends Scene {
         checkPaddleCollisions();
         checkFallingItems();
         removeOldBackground();
+        updateLaserShot(gameTime);
     }
 
     private void removeOldBackground() {

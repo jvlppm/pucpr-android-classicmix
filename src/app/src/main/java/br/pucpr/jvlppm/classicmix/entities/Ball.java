@@ -64,8 +64,6 @@ public class Ball extends GameEntity {
             onCollision(Side.Bottom);
         else if(ballRect.bottom > brickRect.bottom)
             onCollision(Side.Top);
-
-        brick.strength--;
     }
 
     public void getVelocity(Vector dest) {

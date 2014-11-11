@@ -57,13 +57,8 @@ public class Assets {
     public Frame itemPierce;
     public Frame itemSlowBall;
     public Frame bottomBar;
-    public Frame background1;
-    public Frame background2;
-    public Frame background3;
-    public Frame background4;
-    public Frame background5;
-    public Frame background6;
-    public Frame background7;
+    public List<Frame> background;
+    public List<Frame> laser;
 
     public final Map<String, Frame> byName;
 
@@ -79,6 +74,27 @@ public class Assets {
                     Frame frame = loadFrame(context, field.getName() + ".png");
                     field.set(this, frame);
                     byName.put(field.getName(), frame);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+            else if(field.getType().getSimpleName().equals("List")) {
+                int i = 1;
+                List<Frame> frames = new ArrayList<Frame>();
+                while(true) {
+                    String name = field.getName() + i++;
+                    try {
+                        Frame frame = loadFrame(context, name + ".png");
+                        frames.add(frame);
+                        byName.put(name, frame);
+                    }
+                    catch (Exception e) {
+                        break;
+                    }
+                }
+
+                try {
+                    field.set(this, frames);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
