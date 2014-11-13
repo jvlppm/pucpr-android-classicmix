@@ -3,8 +3,8 @@ package br.pucpr.jvlppm.classicmix.activities;
 import android.os.Bundle;
 
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
-import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.GameView;
+import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.screens.GamePlayScreen;
 
 public class GamePlayActivity extends GameActivity {
@@ -23,5 +23,11 @@ public class GamePlayActivity extends GameActivity {
                 finish();
             }
         }));
+    }
+
+    @Override
+    public void onBackPressed() {
+        keepMusic = true;
+        super.onBackPressed();
     }
 }

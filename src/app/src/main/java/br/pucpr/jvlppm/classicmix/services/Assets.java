@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import br.pucpr.jvlppm.classicmix.core.Frame;
+import br.pucpr.jvlppm.classicmix.core.NinePatch;
 
 public class Assets {
     static Assets instance;
@@ -35,9 +36,9 @@ public class Assets {
     boolean loading;
     boolean loaded;
 
-    public Frame paddleBlue;
-    public Frame paddleRed;
-    public Frame paddleShadow;
+    public NinePatch paddleBlue;
+    public NinePatch paddleRed;
+    public NinePatch paddleShadow;
     public Frame ballBlue;
     public Frame ballGray;
     public Frame ballShadow;
@@ -73,6 +74,15 @@ public class Assets {
                 try {
                     Frame frame = loadFrame(context, field.getName() + ".png");
                     field.set(this, frame);
+                    byName.put(field.getName(), frame);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+            else if(field.getType().getSimpleName().equals("NinePatch")) {
+                try {
+                    Frame frame = loadFrame(context, field.getName() + ".9.png");
+                    field.set(this, new NinePatch(frame.texture));
                     byName.put(field.getName(), frame);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();

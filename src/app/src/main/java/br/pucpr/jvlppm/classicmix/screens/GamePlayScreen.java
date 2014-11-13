@@ -31,6 +31,7 @@ import br.pucpr.jvlppm.classicmix.entities.Paddle;
 import br.pucpr.jvlppm.classicmix.entities.Score;
 import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.services.Settings;
+import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class GamePlayScreen extends Scene {
     private static enum State { WAITING, PLAYING, GAME_OVER };
@@ -140,6 +141,7 @@ public class GamePlayScreen extends Scene {
         removeLasers();
         loadLevelData(level);
         setBackground(level);
+        Sound.getInstance().playLevelMusic(level);
     }
 
     private void setState(State state) {
@@ -181,7 +183,7 @@ public class GamePlayScreen extends Scene {
 
         AssetManager am = game.getAssets();
         try {
-            InputStream is = am.open("level" + (level + 1) + ".txt");
+            InputStream is = am.open("levels/level" + (level + 1) + ".txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             int row = 0;
             while(true) {
@@ -202,7 +204,7 @@ public class GamePlayScreen extends Scene {
 
         } catch (IOException e) {
             if(level > 0)
-                startLevel(0);
+                loadLevelData(0);
             e.printStackTrace();
         }
     }
@@ -232,6 +234,9 @@ public class GamePlayScreen extends Scene {
     }
 
     private void setBackground(int level) {
+        if (Settings.Graphics.getBackgroundOpacity() <= 0)
+            return;
+
         List<Frame> backgrounds = Assets.getInstance().background;
         if(level >= backgrounds.size())
             level = 0;
@@ -441,6 +446,9 @@ public class GamePlayScreen extends Scene {
             else if(item.frame == assets.itemLaser) {
                 shootingLaser = true;
             }
+            else if(item.frame == assets.itemEnlarge) {
+                paddle.setWidth(200);
+            }
         }
     }
 
@@ -539,8 +547,8 @@ public class GamePlayScreen extends Scene {
         }
 
         if (trackTouchId < 0 && event.type == TouchEvent.Type.PRESS) {
-            if (Math.abs(paddle.getX() - event.x) < 50 &&
-                    event.y > paddle.getY() - 50)
+            if (Math.abs(paddle.getX() - event.x) < paddle.getWidth() &&
+                    event.y > paddle.getY() - paddle.getWidth())
                 trackTouchId = event.pointerId;
         }
 

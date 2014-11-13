@@ -1,6 +1,5 @@
 package br.pucpr.jvlppm.classicmix.core;
 
-import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -11,7 +10,9 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GameActivity extends Activity {
+import br.pucpr.jvlppm.classicmix.activities.SoundActivity;
+
+public abstract class GameActivity extends SoundActivity {
     private GameTime updateGameTime, drawGameTime;
     private GameView gameView;
     private Canvas gameViewCanvas;

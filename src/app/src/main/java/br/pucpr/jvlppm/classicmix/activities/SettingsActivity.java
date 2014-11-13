@@ -1,5 +1,6 @@
 package br.pucpr.jvlppm.classicmix.activities;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
@@ -7,6 +8,7 @@ import android.preference.PreferenceFragment;
 import java.util.List;
 
 import br.pucpr.jvlppm.classicmix.R;
+import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class SettingsActivity extends PreferenceActivity {
     @Override
@@ -52,12 +54,30 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
-    public static class SoundPreferencesFragment extends PreferenceFragment {
+    public static class SoundPreferencesFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences_sound);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        }
+
+        @Override
+        public void onPause() {
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+            super.onPause();
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            Sound.getInstance().updateVolume();
         }
     }
 }
