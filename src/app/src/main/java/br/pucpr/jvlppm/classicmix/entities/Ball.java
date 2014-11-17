@@ -10,17 +10,22 @@ import br.pucpr.jvlppm.classicmix.core.Vector;
 
 public class Ball extends GameEntity {
     public float x, y;
+    public float oldX, oldY;
+    public final float collisionRange;
     private final Vector velocity;
     private Assets assets;
 
     public Ball() {
         assets = Assets.getInstance();
+        collisionRange = assets.ballBlue.rect.width();
         velocity = new Vector();
     }
 
     @Override
     public void update(GameTime gameTime) {
         super.update(gameTime);
+        oldX = x;
+        oldY = y;
         x += velocity.dx * gameTime.getElapsedTime();
         y += velocity.dy * gameTime.getElapsedTime();
     }
@@ -54,16 +59,23 @@ public class Ball extends GameEntity {
         }
     }
 
-    public void onBrickCollision(Brick brick, Rect ballRect, Rect brickRect) {
-        if(ballRect.right > brickRect.right)
-            onCollision(Side.Left);
-        else if(ballRect.left < brickRect.left)
+    public void onObjectCollision(Rect ballRect, Rect objRect) {
+        if (ballRect.right <= objRect.left + collisionRange) {
             onCollision(Side.Right);
-
-        if(ballRect.top < brickRect.top)
-            onCollision(Side.Bottom);
-        else if(ballRect.bottom > brickRect.bottom)
+            x = objRect.left - collisionRange;
+        }
+        else if(ballRect.left >= objRect.right - collisionRange) {
+            onCollision(Side.Left);
+            x = objRect.right + collisionRange;
+        }
+        else if(ballRect.top >= objRect.bottom - collisionRange) {
             onCollision(Side.Top);
+            y = objRect.bottom + collisionRange;
+        }
+        else if(ballRect.bottom <= objRect.top + collisionRange) {
+            onCollision(Side.Bottom);
+            y = objRect.top - collisionRange;
+        }
     }
 
     public void getVelocity(Vector dest) {

@@ -18,6 +18,7 @@ public class Paddle extends GameEntity {
     private final float height;
     private float width;
     private boolean retracting;
+    private float retractionRate;
 
     public Paddle() {
         assets = Assets.getInstance();
@@ -36,7 +37,7 @@ public class Paddle extends GameEntity {
         super.update(gameTime);
         if (retracting) {
             if (MIN_WIDTH > 30) {
-                setWidth(width - gameTime.getElapsedTime());
+                setWidth(width - gameTime.getElapsedTime() * retractionRate);
                 if (width < MIN_WIDTH)
                     width = MIN_WIDTH;
 
@@ -96,5 +97,9 @@ public class Paddle extends GameEntity {
 
     public void setRetracting(boolean retracting) {
         this.retracting = retracting;
+    }
+
+    public void setRetractionRate(float retractionRate) {
+        this.retractionRate = retractionRate;
     }
 }

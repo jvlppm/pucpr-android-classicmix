@@ -50,6 +50,7 @@ public class Assets {
     public Frame brickYellow;
     public Frame brickShadow;
     public Frame brickReinforcement;
+    public List<Frame> brickStrength;
     public Frame msgGameOver;
     public Frame msgMoveToBegin;
     public Frame lifeIndicator;

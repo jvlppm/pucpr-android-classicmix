@@ -118,16 +118,19 @@ public class GamePlayScreen extends Scene {
                 defaultLives = 5;
                 defaultBallSpeed = 300;
                 defaultScoreMultiplier = 0.5f;
+                paddle.setRetractionRate(0.5f);
                 break;
             case Hard:
                 defaultBallSpeed = 600;
                 defaultLives = 2;
                 defaultScoreMultiplier = 1.2f;
+                paddle.setRetractionRate(0.75f);
                 break;
             default:
                 defaultBallSpeed = 500;
                 defaultLives = 3;
                 defaultScoreMultiplier = 1f;
+                paddle.setRetractionRate(1);
                 break;
         }
 
@@ -227,14 +230,14 @@ public class GamePlayScreen extends Scene {
         Frame frame = null;
         int strength = 1;
         switch (brick) {
-            case 'r': frame = Assets.getInstance().brickRed; break;
-            case 'g': frame = Assets.getInstance().brickGreen; break;
-            case 'b': frame = Assets.getInstance().brickBlue; break;
-            case 'y': frame = Assets.getInstance().brickYellow; break;
-            case 'p': frame = Assets.getInstance().brickPurple; break;
+            case 'b': frame = Assets.getInstance().brickBlue; strength = 1; break;
+            case 'g': frame = Assets.getInstance().brickGreen; strength = 2; break;
+            case 'y': frame = Assets.getInstance().brickYellow; strength = 3; break;
+            case 'r': frame = Assets.getInstance().brickRed; strength = 4; break;
+            case 'p': frame = Assets.getInstance().brickPurple; strength = 5; break;
             case '=':
                 frame = Assets.getInstance().brickGray;
-                strength = 2;
+                strength = 6;
                 break;
         }
         if(frame == null)
@@ -389,7 +392,7 @@ public class GamePlayScreen extends Scene {
                     if (piercing)
                         brick.strength = 0;
                     else
-                        ball.onBrickCollision(brick, tmpRect1, tmpRect2);
+                        ball.onObjectCollision(tmpRect1, tmpRect2);
                     hitBrick(brick);
                 }
             }
@@ -401,7 +404,7 @@ public class GamePlayScreen extends Scene {
     }
 
     private void hitBrick(Brick brick) {
-        brick.strength--;
+        brick.onBalHit();
         if(brick.strength > 1)
             score.add((int)(30 * defaultScoreMultiplier));
 
@@ -450,6 +453,16 @@ public class GamePlayScreen extends Scene {
                     (int) (ball.x + ballRadius),
                     (int) (ball.y + ballRadius)))
                 continue;
+
+            if(ball.y > paddle.getY()) {
+                tmpRect1.set(
+                        (int)(ball.x - ballRadius),
+                        (int)(ball.y - ballRadius),
+                        (int)(ball.x + ballRadius),
+                        (int)(ball.y + ballRadius));
+                ball.onObjectCollision(tmpRect1, tmpRect2);
+                continue;
+            }
 
             ball.getVelocity(tmpVector);
 

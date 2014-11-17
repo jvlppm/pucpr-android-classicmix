@@ -2,25 +2,38 @@ package br.pucpr.jvlppm.classicmix.entities;
 
 import android.graphics.Canvas;
 
-import br.pucpr.jvlppm.classicmix.services.Assets;
+import java.util.List;
+
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
+import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class Brick extends GameEntity {
     public float x, y;
     public int strength;
-    private Frame brickFrame, reinforcementFrame, shadowFrame;
+    public final int initialStrength;
+    private Frame stateFrame;
+    private final Frame brickFrame, shadowFrame;
+    private final List<Frame> breakingFrames;
     public char itemCode;
 
     public Brick(Frame frame, int strength) {
+        this.initialStrength = strength;
         this.strength = strength;
         this.brickFrame = frame;
-        this.reinforcementFrame = Assets.getInstance().brickReinforcement;
         this.shadowFrame = Assets.getInstance().brickShadow;
+        this.breakingFrames = Assets.getInstance().brickStrength;
+        if(strength > breakingFrames.size())
+            this.stateFrame = Assets.getInstance().brickReinforcement;
     }
 
-    void onBallHit() {
+    public void onBalHit() {
         strength--;
+        int state = (int)((((float)strength / initialStrength) * (breakingFrames.size() + 1)));
+
+        if(state < breakingFrames.size())
+            stateFrame = Assets.getInstance().brickStrength.get(state);
+        else stateFrame = null;
     }
 
     @Override
@@ -29,15 +42,7 @@ public class Brick extends GameEntity {
 
         draw(canvas, shadowFrame, x + 2, y + 4, 0.5f, 0.5f);
         draw(canvas, brickFrame, x, y, 0.5f, 0.5f);
-        if(strength > 1)
-            draw(canvas, reinforcementFrame, x, y, 0.5f, 0.5f);
+        if(stateFrame != null)
+            draw(canvas, stateFrame, x, y, 0.5f, 0.5f);
     }
-
-//    public int getWidth() {
-//        return brickFrame.rect.width();
-//    }
-//
-//    public int getHeight() {
-//        return brickFrame.rect.height();
-//    }
 }
