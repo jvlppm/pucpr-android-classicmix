@@ -34,7 +34,7 @@ import br.pucpr.jvlppm.classicmix.services.Settings;
 import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class GamePlayScreen extends Scene {
-    private static enum State { WAITING, PLAYING, GAME_OVER };
+    private static enum State { WAITING_RELEASE, POSITION, PLAYING, GAME_OVER };
     private final static int LAYER_BACKGROUND = 0;
     private final static int LAYER_WORLD = 1;
     private final static int LAYER_GUI = 2;
@@ -71,9 +71,10 @@ public class GamePlayScreen extends Scene {
     private int currentLevel;
     private boolean piercing;
     private float ballSlowEffect;
-    private int trackTouchId;
+    private int trackTouchId = -1;
     public boolean shootingLaser;
     private float timeToLaser;
+    private boolean lostLife;
 
     // Auxiliar objects
     private final Random random;
@@ -135,13 +136,19 @@ public class GamePlayScreen extends Scene {
 
     void startLevel(int level) {
         currentLevel = level;
-        resetBall();
         resetItems();
         removeFallingItems();
         removeLasers();
+        removeAllBalls();
         loadLevelData(level);
         setBackground(level);
         Sound.getInstance().playLevelMusic(level);
+
+        if (trackTouchId >= 0)
+            setState(State.WAITING_RELEASE);
+        else {
+            replaceBall(false);
+        }
     }
 
     private void setState(State state) {
@@ -150,7 +157,7 @@ public class GamePlayScreen extends Scene {
 
         if(this.state != null) {
             switch (this.state) {
-                case WAITING:
+                case POSITION:
                     remove(msgMoveToBegin, LAYER_GUI);
                     break;
                 case GAME_OVER:
@@ -160,7 +167,9 @@ public class GamePlayScreen extends Scene {
         }
 
         switch (state) {
-            case WAITING: add(msgMoveToBegin, LAYER_GUI); break;
+            case POSITION:
+                add(msgMoveToBegin, LAYER_GUI);
+                break;
             case PLAYING:
                 startBallMovement();
                 remove(msgMoveToBegin, LAYER_GUI);
@@ -171,6 +180,7 @@ public class GamePlayScreen extends Scene {
     }
 
     private void resetPaddle() {
+        paddle.resetWidth();
         paddle.setPosition(
                 game.getFrameBufferWidth() / 2,
                 game.getFrameBufferHeight() * 0.8f);
@@ -261,25 +271,43 @@ public class GamePlayScreen extends Scene {
     }
 
     private void loseLife() {
-        lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
         removeFallingItems();
         resetItems();
-        resetBall();
+        resetPaddle();
+        removeAllBalls();
+        lostLife = true;
+
+        if (trackTouchId >= 0)
+            setState(State.WAITING_RELEASE);
+        else
+            replaceBall(true);
     }
 
-    private void resetBall() {
+    private void replaceBall(boolean loseLife) {
+        lostLife = false;
+        if(!loseLife || lifeCounter.getExtraLives() > 0) {
+            if (loseLife)
+                lifeCounter.setExtraLives(lifeCounter.getExtraLives() - 1);
+
+            Ball ball = new Ball();
+            ball.x = game.getFrameBufferWidth() / 2;
+            ball.y = game.getFrameBufferHeight() * 0.6f;
+            balls.add(ball);
+            add(ball, LAYER_WORLD);
+
+            setState(State.POSITION);
+        }
+        else {
+            setState(State.GAME_OVER);
+        }
+    }
+
+    private void removeAllBalls() {
         for (int brickI = 0; brickI < balls.size(); brickI++) {
             Ball ball = balls.get(brickI);
             remove(ball, LAYER_WORLD);
         }
         balls.clear();
-
-        Ball ball = new Ball();
-        ball.x = game.getFrameBufferWidth() / 2;
-        ball.y = game.getFrameBufferHeight() * 0.6f;
-        balls.add(ball);
-        add(ball, LAYER_WORLD);
-        setState(State.WAITING);
     }
 
     private void removeFallingItems() {
@@ -474,11 +502,7 @@ public class GamePlayScreen extends Scene {
         balls.remove(ball);
         remove(ball, LAYER_WORLD);
         if(balls.isEmpty()) {
-            if(lifeCounter.getExtraLives() > 0) {
-                loseLife();
-            }
-            else
-                setState(State.GAME_OVER);
+            loseLife();
         }
     }
 
@@ -572,11 +596,16 @@ public class GamePlayScreen extends Scene {
 
         if (trackTouchId == event.pointerId) {
             if (event.type == TouchEvent.Type.RELEASE) {
-                if(state == State.WAITING)
+                if(state == State.WAITING_RELEASE) {
+                    replaceBall(lostLife);
+                }
+                else if(state == State.POSITION) {
                     setState(State.PLAYING);
+                }
                 trackTouchId = -1;
             }
-            paddle.setPosition(event.x, paddle.getY());
+            else if (state != State.WAITING_RELEASE)
+                paddle.setPosition(event.x, paddle.getY());
         }
     }
 }
