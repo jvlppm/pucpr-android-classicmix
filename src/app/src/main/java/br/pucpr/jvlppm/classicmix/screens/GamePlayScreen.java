@@ -177,8 +177,10 @@ public class GamePlayScreen extends Scene {
     }
 
     private void loadLevelData(int level) {
-        for(Brick brick : bricks)
+        for (int brickI = 0; brickI < bricks.size(); brickI++) {
+            Brick brick = bricks.get(brickI);
             remove(brick, LAYER_WORLD);
+        }
         bricks.clear();
 
         AssetManager am = game.getAssets();
@@ -266,8 +268,10 @@ public class GamePlayScreen extends Scene {
     }
 
     private void resetBall() {
-        for(Ball ball : balls)
+        for (int brickI = 0; brickI < balls.size(); brickI++) {
+            Ball ball = balls.get(brickI);
             remove(ball, LAYER_WORLD);
+        }
         balls.clear();
 
         Ball ball = new Ball();
@@ -279,7 +283,8 @@ public class GamePlayScreen extends Scene {
     }
 
     private void removeFallingItems() {
-        for(Item item : fallingItems) {
+        for (int itemI = 0; itemI < fallingItems.size(); itemI++) {
+            Item item = fallingItems.get(itemI);
             remove(item, LAYER_WORLD);
         }
         fallingItems.clear();
@@ -313,36 +318,45 @@ public class GamePlayScreen extends Scene {
     }
 
     private void checkWallCollisions() {
-        for(Ball ball : balls) {
+        for (int ballI = 0; ballI < balls.size(); ballI++) {
+            Ball ball = balls.get(ballI);
             if (ball.x - ballRadius < 0)
                 ball.onScreenLimit(Side.Left);
-            else if(ball.x + ballRadius > game.getFrameBufferWidth())
+            else if (ball.x + ballRadius > game.getFrameBufferWidth())
                 ball.onScreenLimit(Side.Right);
 
-            if(ball.y - ballRadius < 0)
+            if (ball.y - ballRadius < 0)
                 ball.onScreenLimit(Side.Top);
-            else if(ball.y - ballRadius > game.getFrameBufferHeight()) {
+            else if (ball.y - ballRadius > game.getFrameBufferHeight()) {
                 destroyBall(ball);
             }
         }
     }
 
     private void checkBrickCollisions() {
-        for(Ball ball : balls) {
+        float ignoreDistance = ballRadius + brickRadiusX;
+        for (int ballI = 0; ballI < balls.size(); ballI++) {
+            Ball ball = balls.get(ballI);
             tmpRect1.set((int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
                     (int) (ball.y + ballRadius));
-            for(int i = bricks.size() - 1; i >= 0; i--) {
+            for (int i = bricks.size() - 1; i >= 0; i--) {
                 Brick brick = bricks.get(i);
+                if (ball.y - ignoreDistance > brick.y ||
+                        ball.y + ignoreDistance < brick.y ||
+                        ball.x + ignoreDistance < brick.x ||
+                        ball.x - ignoreDistance > brick.x)
+                    continue;
+
                 tmpRect2.set(
                         (int) (brick.x - brickRadiusX),
                         (int) (brick.y - brickRadiusY),
                         (int) (brick.x + brickRadiusX),
                         (int) (brick.y + brickRadiusY));
 
-                if(tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
-                    if(piercing)
+                if (tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
+                    if (piercing)
                         brick.strength = 0;
                     else
                         ball.onBrickCollision(brick, tmpRect1, tmpRect2);
@@ -394,9 +408,13 @@ public class GamePlayScreen extends Scene {
 
     private void checkPaddleCollisions() {
         paddle.getRect(tmpRect2);
+        float minDistance = brickRadiusY + ballRadius;
 
-        for (Ball ball : balls) {
-            if(!tmpRect2.intersects(
+        for (int ballI = 0; ballI < balls.size(); ballI++) {
+            Ball ball = balls.get(ballI);
+            if (ball.y < paddle.getY() - minDistance)
+                continue;
+            if (!tmpRect2.intersects(
                     (int) (ball.x - ballRadius),
                     (int) (ball.y - ballRadius),
                     (int) (ball.x + ballRadius),
