@@ -13,9 +13,11 @@ public class Paddle extends GameEntity {
     private final NinePatch texture, shadowTexture;
     private final Assets assets;
     private final Rect rect;
+    private final float MIN_WIDTH;
 
     private final float height;
     private float width;
+    private boolean retracting;
 
     public Paddle() {
         assets = Assets.getInstance();
@@ -26,6 +28,20 @@ public class Paddle extends GameEntity {
         height = texture.height();
         rect = new Rect();
         setPosition(0, 0);
+        MIN_WIDTH = texture.leftCenter.rect.width() + texture.rightCenter.rect.width();
+    }
+
+    @Override
+    public void update(GameTime gameTime) {
+        super.update(gameTime);
+        if (retracting) {
+            if (MIN_WIDTH > 30) {
+                setWidth(width - gameTime.getElapsedTime());
+                if (width < MIN_WIDTH)
+                    width = MIN_WIDTH;
+
+            }
+        }
     }
 
     @Override
@@ -42,16 +58,20 @@ public class Paddle extends GameEntity {
 
     public void setWidth(float width) {
         this.width = width;
-        setPosition(x, y);
+        updateRectangle();
     }
 
     public void resetWidth() {
-        width = texture.width();
+        setWidth(texture.width());
     }
 
     public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
+        updateRectangle();
+    }
+
+    private void updateRectangle() {
         rect.set((int)(x - width / 2),
                 (int) (y - height / 2),
                 (int) (x + width / 2),
@@ -72,5 +92,9 @@ public class Paddle extends GameEntity {
 
     public float getWidth() {
         return width;
+    }
+
+    public void setRetracting(boolean retracting) {
+        this.retracting = retracting;
     }
 }

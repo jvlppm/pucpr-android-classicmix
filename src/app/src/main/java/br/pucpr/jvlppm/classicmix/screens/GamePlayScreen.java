@@ -166,6 +166,8 @@ public class GamePlayScreen extends Scene {
             }
         }
 
+        paddle.setRetracting(state == State.PLAYING);
+
         switch (state) {
             case POSITION:
                 add(msgMoveToBegin, LAYER_GUI);
@@ -493,7 +495,7 @@ public class GamePlayScreen extends Scene {
                 shootingLaser = true;
             }
             else if(item.frame == assets.itemEnlarge) {
-                paddle.setWidth(200);
+                paddle.setWidth(paddle.getWidth() + 30);
             }
         }
     }
