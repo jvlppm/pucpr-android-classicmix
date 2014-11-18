@@ -3,6 +3,7 @@ package br.pucpr.jvlppm.classicmix.screens;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -485,6 +486,13 @@ public class GamePlayScreen extends Scene {
                         (int)(ball.x + ballRadius),
                         (int)(ball.y + ballRadius));
                 ball.onObjectCollision(tmpRect1, tmpRect2, true);
+                ball.getVelocity(tmpVector);
+                float speed = ball.getVelocity();
+                float degrees = tmpVector.toDegrees();
+                degrees = Math.min(315, Math.max(225, degrees));
+                Vector.fromDegrees(degrees, tmpVector);
+                ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
+                Log.d(Tag, "degrees: " + degrees);
                 continue;
             }
 
@@ -496,10 +504,7 @@ public class GamePlayScreen extends Scene {
             position = position * 0.95f + variation;
 
             float degrees = (1 - position) * 180;
-            if(degrees > 0 && degrees < 180)
-                degrees = Math.min(135, Math.max(45, degrees));
-            else if (degrees > 180)
-                degrees = Math.max(-135, Math.min(-45, degrees));
+            degrees = Math.min(135, Math.max(45, degrees));
             Vector.fromDegrees(degrees, tmpVector);
             ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
         }

@@ -12,6 +12,14 @@ public class Vector {
         dest.dy = -(float)Math.sin(radians);
     }
 
+    public float toDegrees() {
+        float degrees = (float)Math.toDegrees(Math.atan2(-dy, dx));
+        if(degrees < 0){
+            degrees += 360;
+        }
+        return degrees;
+    }
+
     public float getLength() {
         return (float)Math.sqrt(dx * dx + dy * dy);
     }
