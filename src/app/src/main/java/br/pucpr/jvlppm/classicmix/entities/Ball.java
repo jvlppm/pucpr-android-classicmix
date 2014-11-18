@@ -60,24 +60,36 @@ public class Ball extends GameEntity {
         }
     }
 
-    public void onObjectCollision(Rect ballRect, Rect objRect) {
+    public void onObjectCollision(Rect ballRect, Rect objRect, boolean pushBall) {
+        checkHorizontalCollision(ballRect, objRect, pushBall);
+        checkVerticalCollision(ballRect, objRect, pushBall);
+        Sound.getInstance().playBounce();
+    }
+
+    private void checkHorizontalCollision(Rect ballRect, Rect objRect, boolean pushBall) {
         if (ballRect.right <= objRect.left + collisionRange) {
             onCollision(Side.Right);
-            x = objRect.left - collisionRange;
+//            if (pushBall || oldX < objRect.left - collisionRange)
+//                x = objRect.left - collisionRange;
         }
         else if(ballRect.left >= objRect.right - collisionRange) {
             onCollision(Side.Left);
-            x = objRect.right + collisionRange;
+//            if (pushBall || oldX > objRect.left + collisionRange)
+//                x = objRect.right + collisionRange;
         }
-        else if(ballRect.top >= objRect.bottom - collisionRange) {
+    }
+
+    private void checkVerticalCollision(Rect ballRect, Rect objRect, boolean pushBall) {
+        if(ballRect.top >= objRect.bottom - collisionRange) {
             onCollision(Side.Top);
-            y = objRect.bottom + collisionRange;
+//            if (pushBall || oldY > objRect.bottom + collisionRange)
+//                y = objRect.bottom + collisionRange;
         }
         else if(ballRect.bottom <= objRect.top + collisionRange) {
             onCollision(Side.Bottom);
-            y = objRect.top - collisionRange;
+//            if (pushBall || oldY < objRect.top - collisionRange)
+//                y = objRect.top - collisionRange;
         }
-        Sound.getInstance().playBounce();
     }
 
     public void getVelocity(Vector dest) {

@@ -9,33 +9,35 @@ import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class Paddle extends GameEntity {
     private float x, y;
-    public boolean dragged;
-    private final NinePatch texture, shadowTexture;
+    private final NinePatch blueTexture, redTexture, shadowTexture;
+    private NinePatch texture;
     private final Assets assets;
     private final Rect rect;
     private final float MIN_WIDTH;
 
     private final float height;
     private float width;
-    private boolean retracting;
+    private boolean retracting, playing;
     private float retractionRate;
 
     public Paddle() {
         assets = Assets.getInstance();
-        texture = assets.paddleBlue;
+        blueTexture = assets.paddleBlue;
+        redTexture = assets.paddleRed;
         shadowTexture = assets.paddleShadow;
 
-        width = texture.width();
-        height = texture.height();
+        width = blueTexture.width();
+        height = blueTexture.height();
         rect = new Rect();
         setPosition(0, 0);
-        MIN_WIDTH = texture.leftCenter.rect.width() + texture.rightCenter.rect.width();
+        MIN_WIDTH = blueTexture.leftCenter.rect.width() + blueTexture.rightCenter.rect.width();
+        setRetract(false);
     }
 
     @Override
     public void update(GameTime gameTime) {
         super.update(gameTime);
-        if (retracting) {
+        if (retracting && playing) {
             if (MIN_WIDTH > 30) {
                 setWidth(width - gameTime.getElapsedTime() * retractionRate);
                 if (width < MIN_WIDTH)
@@ -62,7 +64,7 @@ public class Paddle extends GameEntity {
     }
 
     public void resetWidth() {
-        setWidth(texture.width());
+        setWidth(blueTexture.width());
     }
 
     public void setPosition(float x, float y) {
@@ -94,8 +96,13 @@ public class Paddle extends GameEntity {
         return width;
     }
 
-    public void setRetracting(boolean retracting) {
+    public void setRetract(boolean retracting) {
         this.retracting = retracting;
+        texture = retracting? redTexture : blueTexture;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
     }
 
     public void setRetractionRate(float retractionRate) {

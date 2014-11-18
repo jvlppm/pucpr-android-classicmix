@@ -9,6 +9,7 @@ import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.services.Assets;
 
 public class Brick extends GameEntity {
+    private float hitTimeCount;
     public float x, y;
     public int strength;
     public final int initialStrength;
@@ -28,12 +29,21 @@ public class Brick extends GameEntity {
     }
 
     public void onBalHit() {
+        if(hitTimeCount < 0.3f)
+            return;
+        hitTimeCount = 0;
         strength--;
-        int state = (int)((((float)strength / initialStrength) * (breakingFrames.size() + 1)));
+        int state = (int)((((float)strength / 6) * (breakingFrames.size() + 1)));
 
         if(state < breakingFrames.size())
             stateFrame = Assets.getInstance().brickStrength.get(state);
         else stateFrame = null;
+    }
+
+    @Override
+    public void update(GameTime gameTime) {
+        super.update(gameTime);
+        hitTimeCount += gameTime.getElapsedTime();
     }
 
     @Override

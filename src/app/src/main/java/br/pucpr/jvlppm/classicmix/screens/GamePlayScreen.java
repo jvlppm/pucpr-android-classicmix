@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
@@ -169,7 +171,7 @@ public class GamePlayScreen extends Scene {
             }
         }
 
-        paddle.setRetracting(state == State.PLAYING);
+        paddle.setPlaying(state == State.PLAYING);
 
         switch (state) {
             case POSITION:
@@ -192,10 +194,16 @@ public class GamePlayScreen extends Scene {
     }
 
     private void loadLevelData(int level) {
+        paddle.setRetract(false);
+
         for (int brickI = 0; brickI < bricks.size(); brickI++) {
             Brick brick = bricks.get(brickI);
             remove(brick, LAYER_WORLD);
         }
+
+        String word = "([^\\s\\[\\]=]+)";
+        Pattern configPattern = Pattern.compile("^\\[" + word + "(=" + word + ")?]\\s*$");
+
         bricks.clear();
 
         AssetManager am = game.getAssets();
@@ -207,6 +215,16 @@ public class GamePlayScreen extends Scene {
                 String line = reader.readLine();
                 if (line == null)
                     break;
+
+                Matcher m = configPattern.matcher(line);
+
+                if (m.matches()) {
+                    String key = m.group(1);
+                    String value = m.group(3);
+                    if("retract".equals(key))
+                        paddle.setRetract(!"false".equals(value));
+                    continue;
+                }
 
                 for (int i = 0; i < line.length(); i += 2) {
                     char brick = line.charAt(i);
@@ -393,7 +411,7 @@ public class GamePlayScreen extends Scene {
                     if (piercing)
                         brick.strength = 0;
                     else
-                        ball.onObjectCollision(tmpRect1, tmpRect2);
+                        ball.onObjectCollision(tmpRect1, tmpRect2, false);
                     hitBrick(brick);
                 }
             }
@@ -460,13 +478,13 @@ public class GamePlayScreen extends Scene {
 
             Sound.getInstance().playBounce();
 
-            if(ball.y > paddle.getY()) {
+            if(ball.y > paddle.getY() && (ball.x > tmpRect2.right - ballRadius || ball.x < tmpRect2.left + ballRadius)) {
                 tmpRect1.set(
                         (int)(ball.x - ballRadius),
                         (int)(ball.y - ballRadius),
                         (int)(ball.x + ballRadius),
                         (int)(ball.y + ballRadius));
-                ball.onObjectCollision(tmpRect1, tmpRect2);
+                ball.onObjectCollision(tmpRect1, tmpRect2, true);
                 continue;
             }
 
@@ -478,7 +496,10 @@ public class GamePlayScreen extends Scene {
             position = position * 0.95f + variation;
 
             float degrees = (1 - position) * 180;
-            degrees = Math.min(135, Math.max(45, degrees));
+            if(degrees > 0 && degrees < 180)
+                degrees = Math.min(135, Math.max(45, degrees));
+            else if (degrees > 180)
+                degrees = Math.max(-135, Math.min(-45, degrees));
             Vector.fromDegrees(degrees, tmpVector);
             ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
         }
