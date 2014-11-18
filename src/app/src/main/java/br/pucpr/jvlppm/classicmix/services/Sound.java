@@ -3,7 +3,9 @@ package br.pucpr.jvlppm.classicmix.services;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -24,7 +26,14 @@ public class Sound {
     private static Sound instance;
     private final Context context;
     private String currentlyPlayingMusic;
-    MediaPlayer playing;
+    private MediaPlayer playing;
+    private final SoundPool soundPool;
+    private final int effectBounce;
+    private final int effectExplosion;
+    private final int effectDestroy;
+    private final int effectHit;
+
+    private float effectsVolume;
 
     public static synchronized Sound getInstance() {
         if(instance == null)
@@ -34,6 +43,23 @@ public class Sound {
 
     private Sound(Context context) {
         this.context = context;
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        effectBounce = loadEffect("Bounce");
+        effectExplosion = loadEffect("Explosion");
+        effectDestroy = loadEffect("Hit_Destroy");
+        effectHit = loadEffect("Hit_Hurt");
+        updateVolume();
+    }
+
+    private int loadEffect(String name) {
+        try {
+            AssetManager am = context.getAssets();
+            AssetFileDescriptor descriptor = am.openFd("sounds/" + name + ".wav");
+            return soundPool.load(descriptor, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public static synchronized void init(Context context) {
@@ -107,6 +133,7 @@ public class Sound {
         if(playing != null) {
             playing.setVolume(Settings.Sound.getMusicVolume(), Settings.Sound.getMusicVolume());
         }
+        effectsVolume = Settings.Sound.getEffectsVolume();
     }
 
     public void playLevelMusic(int level) {
@@ -171,5 +198,21 @@ public class Sound {
 
         long millisecondsDelay = (long)(delay * 1000);
         timer.schedule(timerTask, millisecondsDelay, millisecondsDelay);
+    }
+
+    public void playBounce() {
+        soundPool.play(effectBounce, effectsVolume, effectsVolume, 1, 0, 1);
+    }
+
+    public void playHit() {
+        soundPool.play(effectHit, effectsVolume, effectsVolume, 1, 0, 1);
+    }
+
+    public void playDestroy() {
+        soundPool.play(effectDestroy, effectsVolume, effectsVolume, 1, 0, 1);
+    }
+
+    public void playExplosion() {
+        soundPool.play(effectExplosion, effectsVolume, effectsVolume, 1, 0, 1);
     }
 }

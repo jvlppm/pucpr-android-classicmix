@@ -40,7 +40,6 @@ public class Paddle extends GameEntity {
                 setWidth(width - gameTime.getElapsedTime() * retractionRate);
                 if (width < MIN_WIDTH)
                     width = MIN_WIDTH;
-
             }
         }
     }

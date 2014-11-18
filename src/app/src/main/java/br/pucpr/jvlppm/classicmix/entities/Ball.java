@@ -7,6 +7,7 @@ import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.Vector;
+import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class Ball extends GameEntity {
     public float x, y;
@@ -76,6 +77,7 @@ public class Ball extends GameEntity {
             onCollision(Side.Bottom);
             y = objRect.top - collisionRange;
         }
+        Sound.getInstance().playBounce();
     }
 
     public void getVelocity(Vector dest) {

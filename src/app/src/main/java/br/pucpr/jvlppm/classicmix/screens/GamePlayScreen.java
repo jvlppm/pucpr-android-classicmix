@@ -281,6 +281,7 @@ public class GamePlayScreen extends Scene {
         resetPaddle();
         removeAllBalls();
         lostLife = true;
+        Sound.getInstance().playExplosion();
 
         if (trackTouchId >= 0)
             setState(State.WAITING_RELEASE);
@@ -413,7 +414,10 @@ public class GamePlayScreen extends Scene {
             dropItems(brick);
             bricks.remove(brick);
             score.add((int)(100 * defaultScoreMultiplier));
+            Sound.getInstance().playDestroy();
         }
+        else
+            Sound.getInstance().playHit();
     }
 
     private void dropItems(Brick brick) {
@@ -453,6 +457,8 @@ public class GamePlayScreen extends Scene {
                     (int) (ball.x + ballRadius),
                     (int) (ball.y + ballRadius)))
                 continue;
+
+            Sound.getInstance().playBounce();
 
             if(ball.y > paddle.getY()) {
                 tmpRect1.set(
