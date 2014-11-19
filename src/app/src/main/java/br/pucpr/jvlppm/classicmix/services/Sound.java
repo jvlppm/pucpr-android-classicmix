@@ -67,16 +67,24 @@ public class Sound {
     }
 
     public void play(String name) throws IOException {
-        if(currentlyPlayingMusic != null && currentlyPlayingMusic.equals(name))
+        float musicVolume = Settings.Sound.getMusicVolume();
+
+        if(currentlyPlayingMusic != null && currentlyPlayingMusic.equals(name) && playing != null)
             return;
 
         currentlyPlayingMusic = name;
+
+        if(playing != null) {
+            fadeOut(playing, 1, musicVolume);
+            playing = null;
+        }
+
+        if(musicVolume == 0)
+            return;
+
         AssetManager am = context.getAssets();
         MediaPlayer mp = new MediaPlayer();
 
-        if(playing != null) {
-            fadeOut(playing, 1, Settings.Sound.getMusicVolume());
-        }
         AssetFileDescriptor descriptor = am.openFd("sounds/" + name + ".mp3");
         mp.setDataSource(
                 descriptor.getFileDescriptor(),
@@ -88,7 +96,7 @@ public class Sound {
 
         if(playing != null) {
             mp.setVolume(0, 0);
-            fadeIn(mp, 1, Settings.Sound.getMusicVolume());
+            fadeIn(mp, 1, musicVolume);
         }
         playing = mp;
     }
@@ -122,7 +130,6 @@ public class Sound {
                 public void onComplete(MediaPlayer mp) {
                     mp.stop();
                     mp.release();
-                    currentlyPlayingMusic = null;
                     playing = null;
                 }
             });
@@ -130,9 +137,24 @@ public class Sound {
     }
 
     public void updateVolume() {
-        if(playing != null) {
-            playing.setVolume(Settings.Sound.getMusicVolume(), Settings.Sound.getMusicVolume());
+
+        float musicVolume = Settings.Sound.getMusicVolume();
+        if(playing != null && musicVolume == 0) {
+            stop();
         }
+        else {
+            if(playing == null) {
+                try {
+                    if (currentlyPlayingMusic != null)
+                        play(currentlyPlayingMusic);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else
+                playing.setVolume(musicVolume, musicVolume);
+        }
+
         effectsVolume = Settings.Sound.getEffectsVolume();
     }
 
@@ -201,18 +223,22 @@ public class Sound {
     }
 
     public void playBounce() {
+        if (effectsVolume == 0) return;
         soundPool.play(effectBounce, effectsVolume, effectsVolume, 1, 0, 1);
     }
 
     public void playHit() {
+        if (effectsVolume == 0) return;
         soundPool.play(effectHit, effectsVolume, effectsVolume, 1, 0, 1);
     }
 
     public void playDestroy() {
+        if (effectsVolume == 0) return;
         soundPool.play(effectDestroy, effectsVolume, effectsVolume, 1, 0, 1);
     }
 
     public void playExplosion() {
+        if (effectsVolume == 0) return;
         soundPool.play(effectExplosion, effectsVolume, effectsVolume, 1, 0, 1);
     }
 }

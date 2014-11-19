@@ -29,6 +29,8 @@
     <string name="settings_performance_threaded_framebuffer_summary">Use uma thread exclusiva para processamento do jogo.</string>
     <string name="settings_display_fps_title">Exibir FPS</string>
     <string name="settings_display_fps_summary">Exibir contador de FPS.</string>
+    <string name="background_disabled">Sem imagem de fundo</string>
+    <string name="sound_disabled">Sem som</string>
     <string name="difficulty_easy">Fácil</string>
     <string name="difficulty_normal">Normal</string>
     <string name="difficulty_hard">Difícil</string>

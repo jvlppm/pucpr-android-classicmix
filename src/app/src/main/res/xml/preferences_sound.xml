@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <br.pucpr.jvlppm.classicmix.android.SliderPreference
         android:defaultValue="0.75"
         android:key="sound_music_volume"
         android:title="@string/settings_sound_music_volume_title"
         android:dialogMessage="@string/settings_sound_music_volume_message"
         android:summary="@array/settings_sound_volume_entries"
+        app:minValue="@string/sound_disabled"
         />
     <br.pucpr.jvlppm.classicmix.android.SliderPreference
-        android:defaultValue="1"
+        android:defaultValue="0.2"
         android:key="sound_effects_volume"
         android:title="@string/settings_sound_effects_volume_title"
         android:dialogMessage="@string/settings_sound_effects_volume_message"
         android:summary="@array/settings_sound_volume_entries"
+        app:minValue="@string/sound_disabled"
         />
 </PreferenceScreen>

@@ -2,5 +2,7 @@
 <resources>
     <declare-styleable name="SliderPreference">
         <attr name="android:summary" />
+        <attr name="minValue" format="string" />
+        <attr name="maxValue" format="string" />
     </declare-styleable>
 </resources>

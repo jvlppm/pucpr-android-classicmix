@@ -25,6 +25,8 @@ public class SliderPreference extends DialogPreference {
     protected float mValue;
     protected int mSeekBarValue;
     protected CharSequence[] mSummaries;
+    private String minValue;
+    private String maxValue;
 
     public SliderPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,10 +42,16 @@ public class SliderPreference extends DialogPreference {
         setDialogLayoutResource(R.layout.slider_preference_dialog);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SliderPreference);
         try {
-            setSummary(a.getTextArray(R.styleable.SliderPreference_android_summary));
-        } catch (Exception e) {
-            // Do nothing
+            this.minValue = a.getString(R.styleable.SliderPreference_minValue);
         }
+        catch (Exception e) { }
+        try {
+            this.maxValue = a.getString(R.styleable.SliderPreference_maxValue);
+        }
+        catch (Exception e) { }
+        try {
+            setSummary(a.getTextArray(R.styleable.SliderPreference_android_summary));
+        } catch (Exception e) { }
         a.recycle();
     }
 
@@ -59,6 +67,11 @@ public class SliderPreference extends DialogPreference {
 
     @Override
     public CharSequence getSummary() {
+        if(mValue == 0 && minValue != null)
+            return minValue;
+        if(mValue == 1 && maxValue != null)
+            return maxValue;
+
         if (mSummaries != null && mSummaries.length > 0) {
             int index = (int) (mValue * mSummaries.length);
             index = Math.min(index, mSummaries.length - 1);

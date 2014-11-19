@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         android:title="@string/settings_category_background"
         android:summary="@string/settings_category_background_summary">
@@ -14,6 +15,7 @@
             android:title="@string/settings_background_opacity_title"
             android:dialogMessage="@string/settings_background_opacity_message"
             android:summary="@array/settings_background_opacity_summaries"
+            app:minValue="@string/background_disabled"
             />
     </PreferenceCategory>
     <PreferenceCategory
