@@ -1,5 +1,6 @@
 package br.pucpr.jvlppm.classicmix.core;
 
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -10,9 +11,10 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.pucpr.jvlppm.classicmix.activities.SoundActivity;
+import br.pucpr.jvlppm.classicmix.activities.MusicController;
 
-public abstract class GameActivity extends SoundActivity {
+public abstract class GameActivity extends Activity {
+    private final MusicController musicController = new MusicController(true);
     private GameTime updateGameTime, drawGameTime;
     private FrameBuffer frameBuffer;
     private Canvas gameViewCanvas;
@@ -47,6 +49,7 @@ public abstract class GameActivity extends SoundActivity {
 
     @Override
     protected void onPause() {
+        musicController.pause(isFinishing());
         frameBuffer.pause();
         super.onPause();
     }
@@ -54,9 +57,16 @@ public abstract class GameActivity extends SoundActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        musicController.resume();
         updateGameTime.tick();
         drawGameTime.tick();
         frameBuffer.resume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        musicController.destroy(isFinishing());
+        super.onDestroy();
     }
 
     protected final void setFrameBuffer(FrameBuffer frameBuffer) {

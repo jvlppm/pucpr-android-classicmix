@@ -1,5 +1,6 @@
 package br.pucpr.jvlppm.classicmix.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -10,7 +11,9 @@ import br.pucpr.jvlppm.classicmix.R;
 import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.services.Sound;
 
-public class TitleScreen extends SoundActivity implements Assets.LoadListener {
+public class TitleScreen extends Activity implements Assets.LoadListener {
+    private final MusicController musicController = new MusicController(false);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,10 +38,34 @@ public class TitleScreen extends SoundActivity implements Assets.LoadListener {
     }
 
     @Override
+    public void startActivity(Intent intent) {
+        musicController.keepMusic();
+        super.startActivity(intent);
+    }
+
+    @Override
     public void onLoadCompleted() {
         ProgressBar progress = (ProgressBar)findViewById(R.id.load_progress);
         progress.setVisibility(View.GONE);
         Button playButton = (Button)findViewById(R.id.play_button);
         playButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onPause() {
+        musicController.pause(isFinishing());
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        musicController.resume();
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        musicController.destroy(isFinishing());
+        super.onDestroy();
     }
 }

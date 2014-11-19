@@ -30,10 +30,4 @@ public class GamePlayActivity extends GameActivity {
             }
         }));
     }
-
-    @Override
-    public void onBackPressed() {
-        keepMusic = true;
-        super.onBackPressed();
-    }
 }

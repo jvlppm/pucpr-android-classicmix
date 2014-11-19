@@ -12,6 +12,8 @@ import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class HighscoreActivity extends Activity {
 
+    private final MusicController musicController = new MusicController(true);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,5 +53,23 @@ public class HighscoreActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        musicController.pause(isFinishing());
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        musicController.resume();
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        musicController.destroy(isFinishing());
+        super.onDestroy();
     }
 }
