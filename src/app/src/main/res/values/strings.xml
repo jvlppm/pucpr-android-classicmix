@@ -24,6 +24,12 @@
     <string name="settings_category_sound_summary">Sound settings</string>
     <string name="settings_category_graphics">Graphics</string>
     <string name="settings_category_graphics_summary">Display settings</string>
+    <string name="settings_category_performance">Performance</string>
+    <string name="settings_category_performance_summary">Performance settings</string>
+    <string name="settings_performance_threaded_framebuffer_title">Threaded Frame Buffer</string>
+    <string name="settings_performance_threaded_framebuffer_summary">Use an exclusive thread to process game view.</string>
+    <string name="settings_display_fps_title">Display FPS</string>
+    <string name="settings_display_fps_summary">Display a FPS counter.</string>
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_normal">Normal</string>
     <string name="difficulty_hard">Hard</string>

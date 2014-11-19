@@ -23,6 +23,12 @@
     <string name="settings_category_sound_summary">Opções de Som</string>
     <string name="settings_category_graphics">Imagem</string>
     <string name="settings_category_graphics_summary">Opções de visualização</string>
+    <string name="settings_category_performance">Performance</string>
+    <string name="settings_category_performance_summary">Opções de performance</string>
+    <string name="settings_performance_threaded_framebuffer_title">Thread para processamento gráfico</string>
+    <string name="settings_performance_threaded_framebuffer_summary">Use uma thread exclusiva para processamento do jogo.</string>
+    <string name="settings_display_fps_title">Exibir FPS</string>
+    <string name="settings_display_fps_summary">Exibir contador de FPS.</string>
     <string name="difficulty_easy">Fácil</string>
     <string name="difficulty_normal">Normal</string>
     <string name="difficulty_hard">Difícil</string>

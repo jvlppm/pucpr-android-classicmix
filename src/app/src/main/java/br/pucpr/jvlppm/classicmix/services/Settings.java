@@ -56,5 +56,13 @@ public class Settings {
         public static float getBackgroundOpacity() {
             return getPreferences().getFloat("background_opacity", 0);
         }
+
+        public static boolean useThreadedFrameBuffer() {
+            return getPreferences().getBoolean("threaded_framebuffer", true);
+        }
+
+        public static boolean displayFps() {
+            return getPreferences().getBoolean("display_fps", false);
+        }
     }
 }

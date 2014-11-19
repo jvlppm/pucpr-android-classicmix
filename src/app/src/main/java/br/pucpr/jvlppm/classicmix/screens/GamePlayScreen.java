@@ -27,6 +27,7 @@ import br.pucpr.jvlppm.classicmix.entities.Background;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
+import br.pucpr.jvlppm.classicmix.entities.FPS;
 import br.pucpr.jvlppm.classicmix.entities.Image;
 import br.pucpr.jvlppm.classicmix.entities.Item;
 import br.pucpr.jvlppm.classicmix.entities.Laser;
@@ -136,6 +137,9 @@ public class GamePlayScreen extends Scene {
                 paddle.setRetractionRate(1);
                 break;
         }
+
+        if (Settings.Graphics.displayFps())
+            add(new FPS(), LAYER_GUI);
 
         reset();
     }

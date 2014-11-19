@@ -5,8 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
-public class GameView extends SurfaceView implements Runnable {
+public class ThreadedFrameBuffer extends SurfaceView implements FrameBuffer, Runnable {
     private final GameActivity game;
     private SurfaceHolder holder;
 
@@ -16,10 +17,7 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean running;
     private Thread renderThread;
 
-    private long lastDrawDuration, lastDraw;
-    private final long maxRenderDelay = 1000000000 / 45;
-
-    public GameView(GameActivity game, int width, int height) {
+    public ThreadedFrameBuffer(GameActivity game, int width, int height) {
         super(game);
         this.game = game;
         this.frameBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
@@ -29,6 +27,11 @@ public class GameView extends SurfaceView implements Runnable {
 
     public Canvas getCanvas() {
         return frameBufferCanvas;
+    }
+
+    @Override
+    public View getView() {
+        return this;
     }
 
     public void pause() {
@@ -56,25 +59,13 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public void run() {
         Rect dstRect = new Rect();
-        long currentTime = System.nanoTime();
-        float pendingUpdate = 0;
-        float desiredUpdateTime = 0.01f;
+
         while ( running )
         {
             if(!holder.getSurface().isValid())
                 continue;
 
-            long newTime = System.nanoTime();
-            float frameTime = seconds(newTime - currentTime);
-            currentTime = newTime;
-
-            pendingUpdate += frameTime;
-
-            while (pendingUpdate >= desiredUpdateTime)
-            {
-                game.update();
-                pendingUpdate -= desiredUpdateTime;
-            }
+            game.update();
             game.draw();
 
             Canvas canvas = holder.lockCanvas();

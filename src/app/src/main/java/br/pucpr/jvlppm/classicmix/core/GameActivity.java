@@ -14,7 +14,7 @@ import br.pucpr.jvlppm.classicmix.activities.SoundActivity;
 
 public abstract class GameActivity extends SoundActivity {
     private GameTime updateGameTime, drawGameTime;
-    private GameView gameView;
+    private FrameBuffer frameBuffer;
     private Canvas gameViewCanvas;
     private Scene currentScreen;
     private final List<TouchEvent> unhandledTouches, handledTouches;
@@ -36,7 +36,7 @@ public abstract class GameActivity extends SoundActivity {
         drawGameTime = new GameTime();
         drawGameTime.setMaxElapsedTime(0.5f);
 
-        setGameView(createGameView());
+        setFrameBuffer(createFrameBuffer());
     }
 
     private void requestFullScreen() {
@@ -47,7 +47,7 @@ public abstract class GameActivity extends SoundActivity {
 
     @Override
     protected void onPause() {
-        gameView.pause();
+        frameBuffer.pause();
         super.onPause();
     }
 
@@ -56,29 +56,29 @@ public abstract class GameActivity extends SoundActivity {
         super.onResume();
         updateGameTime.tick();
         drawGameTime.tick();
-        gameView.resume();
+        frameBuffer.resume();
     }
 
-    protected final void setGameView(GameView gameView) {
-        this.gameView = gameView;
-        this.gameViewCanvas = gameView.getCanvas();
-        setContentView(gameView);
+    protected final void setFrameBuffer(FrameBuffer frameBuffer) {
+        this.frameBuffer = frameBuffer;
+        this.gameViewCanvas = frameBuffer.getCanvas();
+        setContentView(frameBuffer.getView());
     }
 
     protected int getWidth() {
-        return gameView.getWidth();
+        return frameBuffer.getView().getWidth();
     }
 
     protected int getHeight() {
-        return gameView.getHeight();
+        return frameBuffer.getView().getHeight();
     }
 
     public int getFrameBufferWidth() {
-        return this.gameView.getFrameBufferWidth();
+        return this.frameBuffer.getFrameBufferWidth();
     }
 
     public int getFrameBufferHeight() {
-        return this.gameView.getFrameBufferHeight();
+        return this.frameBuffer.getFrameBufferHeight();
     }
 
     public float toFrameBufferX(float x) {
@@ -89,11 +89,11 @@ public abstract class GameActivity extends SoundActivity {
         return (y / (float) getHeight()) * getFrameBufferHeight();
     }
 
-    protected GameView createGameView() {
+    protected FrameBuffer createFrameBuffer() {
         boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         int width = isLandscape ? 480 : 320;
         int height = isLandscape ? 320 : 480;
-        return new GameView(this, width, height);
+        return new ThreadedFrameBuffer(this, width, height);
     }
 
     void update() {

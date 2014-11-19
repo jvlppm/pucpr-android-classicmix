@@ -16,4 +16,18 @@
             android:summary="@array/settings_background_opacity_summaries"
             />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/settings_category_performance"
+        android:summary="@string/settings_category_performance_summary">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="threaded_framebuffer"
+            android:title="@string/settings_performance_threaded_framebuffer_title"
+            android:summary="@string/settings_performance_threaded_framebuffer_summary"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="display_fps"
+            android:title="@string/settings_display_fps_title"
+            android:summary="@string/settings_display_fps_summary"/>
+    </PreferenceCategory>
 </PreferenceScreen>
