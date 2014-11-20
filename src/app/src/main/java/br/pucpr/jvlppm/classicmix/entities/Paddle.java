@@ -96,9 +96,8 @@ public class Paddle extends GameEntity {
     }
 
     public void setRetract(boolean retracting) {
-        if(retracting == this.retracting)
-            return;
-        resetWidth();
+        if(retracting != this.retracting)
+            resetWidth();
         this.retracting = retracting;
         texture = retracting? redTexture : blueTexture;
     }

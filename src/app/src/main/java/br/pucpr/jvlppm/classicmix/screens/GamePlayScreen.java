@@ -361,7 +361,7 @@ public class GamePlayScreen extends Scene {
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
-        startLevel(0);
+        startLevel(2);
     }
 
     private void startBallMovement() {
@@ -417,11 +417,9 @@ public class GamePlayScreen extends Scene {
                         (int) (brick.y + brickRadiusY));
 
                 if (tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
-                    if (piercing)
-                        brick.strength = 0;
-                    else
-                        ball.onObjectCollision(tmpRect1, tmpRect2, false);
                     hitBrick(brick);
+                    if(!piercing | brick.strength > 0)
+                        ball.onObjectCollision(tmpRect1, tmpRect2, false);
                 }
             }
         }
@@ -534,6 +532,8 @@ public class GamePlayScreen extends Scene {
                 continue;
             remove(item, LAYER_WORLD);
             fallingItems.remove(i);
+
+            score.add((int)(200 * defaultScoreMultiplier));
 
             Assets assets = Assets.getInstance();
             if(item.frame == assets.itemSlowBall) {
