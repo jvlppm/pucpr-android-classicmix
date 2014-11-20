@@ -1,6 +1,7 @@
 package br.pucpr.jvlppm.classicmix.entities;
 
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Brick extends GameEntity {
     private final Frame brickFrame, shadowFrame;
     private final List<Frame> breakingFrames;
     public char itemCode;
+    private float scale;
 
     public Brick(Frame frame, int strength) {
         this.initialStrength = strength;
@@ -50,9 +52,22 @@ public class Brick extends GameEntity {
     public void draw(GameTime gameTime, Canvas canvas) {
         super.draw(gameTime, canvas);
 
-        draw(canvas, shadowFrame, x + 2, y + 4, 0.5f, 0.5f);
-        draw(canvas, brickFrame, x, y, 0.5f, 0.5f);
+        draw(canvas, shadowFrame, x * scale, y * scale, 0, 0, scale);
+        draw(canvas, brickFrame, x * scale, y * scale, 0, 0, scale);
         if(stateFrame != null)
-            draw(canvas, stateFrame, x, y, 0.5f, 0.5f);
+            draw(canvas, stateFrame, x * scale, y * scale, 0, 0, scale);
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public void getRect(Rect dest) {
+        float width = brickFrame.rect.width() * scale;
+        float height = brickFrame.rect.height() * scale;
+        dest.set((int) (x * scale),
+                 (int) (y * scale),
+                 (int) (x * scale + width),
+                 (int) (y * scale + height));
     }
 }

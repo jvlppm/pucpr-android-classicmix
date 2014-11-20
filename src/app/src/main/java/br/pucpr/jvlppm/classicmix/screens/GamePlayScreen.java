@@ -62,7 +62,6 @@ public class GamePlayScreen extends Scene {
 
     // Game Objects info
     private final float ballRadius;
-    private final float brickRadiusX, brickRadiusY;
 
     // Difficulty modifiers
     private final float defaultBallSpeed;
@@ -75,10 +74,13 @@ public class GamePlayScreen extends Scene {
     // Game State
     private State state;
     private int currentLevel;
-    private boolean piercing;
+
+    // Items
+    private int piercing;
+    public int shootingLaser;
+
     private float ballSlowEffect;
     private int trackTouchId = -1;
-    public boolean shootingLaser;
     private float timeToLaser;
     private boolean lostLife;
 
@@ -108,8 +110,6 @@ public class GamePlayScreen extends Scene {
         lasers = new Pool<Laser>(Laser.class);
 
         ballRadius = assets.ballBlue.texture.getWidth() / 2;
-        brickRadiusX = assets.brickBlue.texture.getWidth() / 2;
-        brickRadiusY = assets.brickBlue.texture.getHeight() / 2;
         msgMoveToBegin = new Image(assets.msgMoveToBegin, Image.Alignment.Center);
         msgGameOver = new Image(assets.msgGameOver, Image.Alignment.Center);
         laserReadyEffect = assets.laser.get(0);
@@ -149,7 +149,7 @@ public class GamePlayScreen extends Scene {
 
     void startLevel(int level) {
         currentLevel = level;
-        resetItems();
+        resetItems(true);
         removeFallingItems();
         removeLasers();
         removeAllBalls();
@@ -219,6 +219,8 @@ public class GamePlayScreen extends Scene {
             InputStream is = am.open("levels/level" + (level + 1) + ".txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             int row = 0;
+            int minColumns = 8;
+            int maxColumns = minColumns;
             while(true) {
                 String line = reader.readLine();
                 if (line == null)
@@ -234,6 +236,11 @@ public class GamePlayScreen extends Scene {
                     continue;
                 }
 
+                int lineColumns = (int)Math.ceil((float)line.length() / 2);
+
+                if(lineColumns > maxColumns)
+                    maxColumns = lineColumns;
+
                 for (int i = 0; i < line.length(); i += 2) {
                     char brick = line.charAt(i);
                     char item = '\0';
@@ -243,6 +250,12 @@ public class GamePlayScreen extends Scene {
                 }
 
                 row++;
+            }
+
+            float scale = minColumns / (float)maxColumns;
+
+            for(Brick brick : bricks) {
+                brick.setScale(scale);
             }
 
         } catch (IOException e) {
@@ -269,8 +282,8 @@ public class GamePlayScreen extends Scene {
         if(frame == null)
             return;
         Brick bEntity = new Brick(frame, strength);
-        bEntity.x = col * frame.rect.width() + frame.rect.width() / 2;
-        bEntity.y = row * frame.rect.height() + frame.rect.height() / 2;
+        bEntity.x = col * frame.rect.width();
+        bEntity.y = row * frame.rect.height();
         add(bEntity, LAYER_WORLD);
         bEntity.itemCode = item;
         bricks.add(bEntity);
@@ -303,7 +316,7 @@ public class GamePlayScreen extends Scene {
 
     private void loseLife() {
         removeFallingItems();
-        resetItems();
+        resetItems(false);
         resetPaddle();
         removeAllBalls();
         lostLife = true;
@@ -350,10 +363,16 @@ public class GamePlayScreen extends Scene {
         fallingItems.clear();
     }
 
-    private void resetItems() {
+    private void resetItems(boolean dropAll) {
         ballSlowEffect = 1;
-        piercing = false;
-        shootingLaser = false;
+        if(dropAll) {
+            piercing = 0;
+            shootingLaser = 0;
+        }
+        else {
+            piercing = Math.max(0, piercing - 1);
+            shootingLaser = Math.max(0, shootingLaser - 1);
+        }
     }
 
     private void reset() {
@@ -361,7 +380,7 @@ public class GamePlayScreen extends Scene {
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
-        startLevel(2);
+        startLevel(3);
     }
 
     private void startBallMovement() {
@@ -395,7 +414,6 @@ public class GamePlayScreen extends Scene {
     }
 
     private void checkBrickCollisions() {
-        float ignoreDistance = ballRadius + brickRadiusX;
         for (int ballI = 0; ballI < balls.size(); ballI++) {
             Ball ball = balls.get(ballI);
             tmpRect1.set((int) (ball.x - ballRadius),
@@ -404,21 +422,17 @@ public class GamePlayScreen extends Scene {
                     (int) (ball.y + ballRadius));
             for (int i = bricks.size() - 1; i >= 0; i--) {
                 Brick brick = bricks.get(i);
-                if (ball.y - ignoreDistance > brick.y ||
-                        ball.y + ignoreDistance < brick.y ||
-                        ball.x + ignoreDistance < brick.x ||
-                        ball.x - ignoreDistance > brick.x)
+                brick.getRect(tmpRect2);
+                float ignoreDistance = ballRadius + tmpRect2.width();
+                if (ball.y - ignoreDistance > tmpRect2.centerY() ||
+                        ball.y + ignoreDistance < tmpRect2.centerY() ||
+                        ball.x + ignoreDistance < tmpRect2.centerX() ||
+                        ball.x - ignoreDistance > tmpRect2.centerX())
                     continue;
-
-                tmpRect2.set(
-                        (int) (brick.x - brickRadiusX),
-                        (int) (brick.y - brickRadiusY),
-                        (int) (brick.x + brickRadiusX),
-                        (int) (brick.y + brickRadiusY));
 
                 if (tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
                     hitBrick(brick);
-                    if(!piercing | brick.strength > 0)
+                    if(piercing <= 0 || brick.strength > 0)
                         ball.onObjectCollision(tmpRect1, tmpRect2, false);
                 }
             }
@@ -463,14 +477,15 @@ public class GamePlayScreen extends Scene {
             default: return;
         }
 
-        Item item = new Item(frame, brick.x, brick.y);
+        brick.getRect(tmpRect1);
+        Item item = new Item(frame, tmpRect1.centerX(), tmpRect1.centerY());
         add(item, LAYER_WORLD);
         fallingItems.add(item);
     }
 
     private void checkPaddleCollisions() {
         paddle.getRect(tmpRect2);
-        float minDistance = brickRadiusY + ballRadius;
+        float minDistance = paddle.getWidth() + ballRadius;
 
         for (int ballI = 0; ballI < balls.size(); ballI++) {
             Ball ball = balls.get(ballI);
@@ -542,10 +557,10 @@ public class GamePlayScreen extends Scene {
                 ballSlowEffect *= 0.6f;
             }
             else if(item.frame == assets.itemPierce) {
-                piercing = true;
+                piercing++;
             }
             else if(item.frame == assets.itemLaser) {
-                shootingLaser = true;
+                shootingLaser++;
             }
             else if(item.frame == assets.itemEnlarge) {
                 paddle.setWidth(paddle.getWidth() + 30);
@@ -570,18 +585,14 @@ public class GamePlayScreen extends Scene {
     }
 
     private void updateLaserShot(GameTime gameTime) {
-        if(shootingLaser) {
+        if(shootingLaser > 0) {
             timeToLaser -= gameTime.getElapsedTime();
         }
         for(int li = lasers.inUse.size() - 1; li >= 0; li--) {
             Laser laser = lasers.inUse.get(li);
             for(int bi = bricks.size() - 1; bi >= 0; bi--) {
                 Brick brick = bricks.get(bi);
-                tmpRect2.set(
-                        (int) (brick.x - brickRadiusX),
-                        (int) (brick.y - brickRadiusY),
-                        (int) (brick.x + brickRadiusX),
-                        (int) (brick.y + brickRadiusY));
+                brick.getRect(tmpRect2);
 
                 if(tmpRect2.intersects((int)laser.x - 1, (int)laser.y - 4, (int)laser.x + 1, (int)laser.y + 8)) {
                     hitBrick(brick);
@@ -628,7 +639,7 @@ public class GamePlayScreen extends Scene {
         canvas.drawARGB(255, 127, 127, 127);
         super.draw(gameTime, canvas);
 
-        if(shootingLaser && timeToLaser <= 0) {
+        if(shootingLaser > 0 && timeToLaser <= 0) {
             paddle.getRect(tmpRect1);
             tmpRect2.set(tmpRect1.left + LASER_MARGIN - laserReadyEffect.rect.width(), tmpRect1.centerY() - laserReadyEffect.rect.height(), tmpRect1.left + LASER_MARGIN + laserReadyEffect.rect.width(), tmpRect1.centerY() + laserReadyEffect.rect.height());
             canvas.drawBitmap(laserReadyEffect.texture, laserReadyEffect.rect, tmpRect2, null);
@@ -652,7 +663,7 @@ public class GamePlayScreen extends Scene {
                     event.y > paddle.getY() - paddle.getWidth())
                 trackTouchId = event.pointerId;
 
-            if(shootingLaser && timeToLaser < 0) {
+            if(shootingLaser > 0 && timeToLaser < 0) {
                 paddle.getRect(tmpRect1);
                 createLaser(tmpRect1.right - LASER_MARGIN, paddle.getY());
                 createLaser(tmpRect1.left + LASER_MARGIN, paddle.getY());
