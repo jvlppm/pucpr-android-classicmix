@@ -8,6 +8,7 @@
     <string name="settings_background_animations_title">Habilitar animações</string>
     <string name="settings_background_opacity_message">Selecione o nível de opacidade da imagem de fundo</string>
     <string name="settings_background_opacity_title">Opacidade da imagem de fundo</string>
+    <string name="background_disabled">Sem imagem de fundo</string>
     <string name="settings_category_background">Imagem de fundo</string>
     <string name="settings_category_background_summary">Preferências da imagem de fundo</string>
     <string name="settings_category_gameplay">Jogo</string>
@@ -29,7 +30,8 @@
     <string name="settings_performance_threaded_framebuffer_summary">Use uma thread exclusiva para processamento do jogo.</string>
     <string name="settings_display_fps_title">Exibir FPS</string>
     <string name="settings_display_fps_summary">Exibir contador de FPS.</string>
-    <string name="background_disabled">Sem imagem de fundo</string>
+    <string name="settings_performance_use_shadows_title">Usar sombras</string>
+    <string name="settings_performance_use_shadows_summary">Exibir sombras em elementos do jogo.</string>
     <string name="sound_disabled">Sem som</string>
     <string name="difficulty_easy">Fácil</string>
     <string name="difficulty_normal">Normal</string>

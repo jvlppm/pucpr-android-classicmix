@@ -8,6 +8,7 @@ import java.util.List;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.services.Assets;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class Brick extends GameEntity {
     private float hitTimeCount;
@@ -19,6 +20,7 @@ public class Brick extends GameEntity {
     private final List<Frame> breakingFrames;
     public char itemCode;
     private float scale;
+    private final boolean useShadows;
 
     public Brick(Frame frame, int strength) {
         this.initialStrength = strength;
@@ -26,6 +28,7 @@ public class Brick extends GameEntity {
         this.brickFrame = frame;
         this.shadowFrame = Assets.getInstance().brickShadow;
         this.breakingFrames = Assets.getInstance().brickStrength;
+        this.useShadows = Settings.Graphics.useShadows();
         if(strength > breakingFrames.size())
             this.stateFrame = Assets.getInstance().brickReinforcement;
     }
@@ -52,7 +55,8 @@ public class Brick extends GameEntity {
     public void draw(GameTime gameTime, Canvas canvas) {
         super.draw(gameTime, canvas);
 
-        draw(canvas, shadowFrame, x * scale, y * scale, 0, 0, scale);
+        if(useShadows)
+            draw(canvas, shadowFrame, x * scale, y * scale, 0, 0, scale);
         draw(canvas, brickFrame, x * scale, y * scale, 0, 0, scale);
         if(stateFrame != null)
             draw(canvas, stateFrame, x * scale, y * scale, 0, 0, scale);

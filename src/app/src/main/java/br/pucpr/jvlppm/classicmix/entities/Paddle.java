@@ -6,8 +6,10 @@ import android.graphics.Rect;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.NinePatch;
 import br.pucpr.jvlppm.classicmix.services.Assets;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 
 public class Paddle extends GameEntity {
+    private final boolean useShadows;
     private float x, y;
     private final NinePatch blueTexture, redTexture, shadowTexture;
     private NinePatch texture;
@@ -31,6 +33,7 @@ public class Paddle extends GameEntity {
         setPosition(0, 0);
         MIN_WIDTH = blueTexture.leftCenter.rect.width() + blueTexture.rightCenter.rect.width();
         setRetract(false);
+        this.useShadows = Settings.Graphics.useShadows();
     }
 
     @Override
@@ -49,7 +52,8 @@ public class Paddle extends GameEntity {
     public void draw(GameTime gameTime, Canvas canvas) {
         super.draw(gameTime, canvas);
 
-        draw(canvas, shadowTexture, x + 2, y + 4);
+        if(useShadows)
+            draw(canvas, shadowTexture, x + 2, y + 4);
         draw(canvas, texture, x, y);
     }
 

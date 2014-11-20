@@ -64,5 +64,9 @@ public class Settings {
         public static boolean displayFps() {
             return getPreferences().getBoolean("display_fps", false);
         }
+
+        public static boolean useShadows() {
+            return getPreferences().getBoolean("use_shadows", true);
+        }
     }
 }

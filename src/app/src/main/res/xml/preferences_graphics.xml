@@ -31,5 +31,10 @@
             android:key="display_fps"
             android:title="@string/settings_display_fps_title"
             android:summary="@string/settings_display_fps_summary"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="use_shadows"
+            android:title="@string/settings_performance_use_shadows_title"
+            android:summary="@string/settings_performance_use_shadows_summary"/>
     </PreferenceCategory>
 </PreferenceScreen>

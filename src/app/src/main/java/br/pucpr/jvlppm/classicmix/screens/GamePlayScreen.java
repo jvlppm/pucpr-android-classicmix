@@ -380,7 +380,7 @@ public class GamePlayScreen extends Scene {
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
-        startLevel(3);
+        startLevel(0);
     }
 
     private void startBallMovement() {

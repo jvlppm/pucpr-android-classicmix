@@ -7,9 +7,11 @@ import br.pucpr.jvlppm.classicmix.services.Assets;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.GameTime;
 import br.pucpr.jvlppm.classicmix.core.Vector;
+import br.pucpr.jvlppm.classicmix.services.Settings;
 import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class Ball extends GameEntity {
+    private final boolean useShadows;
     public float x, y;
     public float oldX, oldY;
     public final float collisionRange;
@@ -19,6 +21,7 @@ public class Ball extends GameEntity {
     public Ball() {
         assets = Assets.getInstance();
         collisionRange = assets.ballBlue.rect.width();
+        this.useShadows = Settings.Graphics.useShadows();
         velocity = new Vector();
     }
 
@@ -35,7 +38,8 @@ public class Ball extends GameEntity {
     public void draw(GameTime gameTime, Canvas canvas) {
         super.draw(gameTime, canvas);
 
-        draw(canvas, assets.ballShadow, x + 2, y + 4, 0.5f, 0.5f);
+        if (useShadows)
+            draw(canvas, assets.ballShadow, x + 2, y + 4, 0.5f, 0.5f);
         draw(canvas, assets.ballGray, x, y, 0.5f, 0.5f);
     }
 
@@ -69,26 +73,18 @@ public class Ball extends GameEntity {
     private void checkHorizontalCollision(Rect ballRect, Rect objRect, boolean pushBall) {
         if (ballRect.right <= objRect.left + collisionRange) {
             onCollision(Side.Right);
-//            if (pushBall || oldX < objRect.left - collisionRange)
-//                x = objRect.left - collisionRange;
         }
         else if(ballRect.left >= objRect.right - collisionRange) {
             onCollision(Side.Left);
-//            if (pushBall || oldX > objRect.left + collisionRange)
-//                x = objRect.right + collisionRange;
         }
     }
 
     private void checkVerticalCollision(Rect ballRect, Rect objRect, boolean pushBall) {
         if(ballRect.top >= objRect.bottom - collisionRange) {
             onCollision(Side.Top);
-//            if (pushBall || oldY > objRect.bottom + collisionRange)
-//                y = objRect.bottom + collisionRange;
         }
         else if(ballRect.bottom <= objRect.top + collisionRange) {
             onCollision(Side.Bottom);
-//            if (pushBall || oldY < objRect.top - collisionRange)
-//                y = objRect.top - collisionRange;
         }
     }
 
