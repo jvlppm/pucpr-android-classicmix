@@ -18,18 +18,45 @@ public class Scene<T> {
     public final GameActivity game;
     private final FinishListener<T> finishListener;
     private final TreeMap<Integer, List<GameEntity>> entities;
+    private final List<Runnable> pendingOperations;
+    private boolean ignorePendingOperations;
 
     public Scene(GameActivity game, FinishListener<T> finishListener) {
         this.game = game;
         this.finishListener = finishListener;
         entities = new TreeMap<Integer, List<GameEntity>>();
+        pendingOperations = new ArrayList<Runnable>();
     }
 
     protected void update(GameTime gameTime) {
         for (Integer layer : entities.keySet()) {
-            for (GameEntity entity : entities.get(layer))
+            List<GameEntity> layerEntities = entities.get(layer);
+            for(int i  = 0; i < layerEntities.size(); i++) {
+                GameEntity entity = layerEntities.get(i);
                 entity.update(gameTime);
+            }
         }
+        runPendingOperations();
+    }
+
+    public void post(Runnable runnable) {
+        pendingOperations.add(runnable);
+    }
+
+    private void runPendingOperations() {
+        int max = pendingOperations.size();
+        for(int i = 0; i < max; i++) {
+            if(ignorePendingOperations)
+                break;
+            pendingOperations.get(0).run();
+            pendingOperations.remove(0);
+        }
+        ignorePendingOperations = false;
+    }
+
+    protected void clearPendingOperations() {
+        ignorePendingOperations = true;
+        pendingOperations.clear();
     }
 
     protected void draw(GameTime gameTime, Canvas canvas) {

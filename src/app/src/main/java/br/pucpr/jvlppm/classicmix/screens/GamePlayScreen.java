@@ -42,6 +42,7 @@ public class GamePlayScreen extends Scene {
     private final static int LAYER_BACKGROUND = 0;
     private final static int LAYER_WORLD = 1;
     private final static int LAYER_GUI = 2;
+    private final static int LASER_MARGIN = 12;
 
     static final String Tag = "GamePlayScreen";
 
@@ -57,6 +58,7 @@ public class GamePlayScreen extends Scene {
     private Background oldBackground;
     private final Image msgMoveToBegin;
     private final Image msgGameOver;
+    private final Frame laserReadyEffect;
 
     // Game Objects info
     private final float ballRadius;
@@ -68,7 +70,7 @@ public class GamePlayScreen extends Scene {
     private final float defaultScoreMultiplier;
 
     // Constants
-    private final float laserDelay = 1;
+    private final float LASER_DELAY = 1;
 
     // Game State
     private State state;
@@ -110,6 +112,7 @@ public class GamePlayScreen extends Scene {
         brickRadiusY = assets.brickBlue.texture.getHeight() / 2;
         msgMoveToBegin = new Image(assets.msgMoveToBegin, Image.Alignment.Center);
         msgGameOver = new Image(assets.msgGameOver, Image.Alignment.Center);
+        laserReadyEffect = assets.laser.get(0);
 
         tmpRect2 = new Rect();
         tmpRect1 = new Rect();
@@ -354,6 +357,7 @@ public class GamePlayScreen extends Scene {
     }
 
     private void reset() {
+        clearPendingOperations();
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
@@ -559,6 +563,7 @@ public class GamePlayScreen extends Scene {
 
     private void createLaser(float x, float y) {
         Laser laser = lasers.getNew();
+        laser.reset();
         laser.x = x;
         laser.y = y;
         add(laser, LAYER_WORLD);
@@ -567,21 +572,9 @@ public class GamePlayScreen extends Scene {
     private void updateLaserShot(GameTime gameTime) {
         if(shootingLaser) {
             timeToLaser -= gameTime.getElapsedTime();
-            if (timeToLaser <= 0) {
-                timeToLaser = laserDelay;
-                paddle.getRect(tmpRect1);
-                createLaser(tmpRect1.right - 8, paddle.getY());
-                createLaser(tmpRect1.left + 8, paddle.getY());
-            }
         }
         for(int li = lasers.inUse.size() - 1; li >= 0; li--) {
             Laser laser = lasers.inUse.get(li);
-            if (laser.y < 0 || laser.destroyed()) {
-                remove(laser, LAYER_WORLD);
-                laser.reset();
-                lasers.remove(laser);
-            }
-
             for(int bi = bricks.size() - 1; bi >= 0; bi--) {
                 Brick brick = bricks.get(bi);
                 tmpRect2.set(
@@ -593,7 +586,13 @@ public class GamePlayScreen extends Scene {
                 if(tmpRect2.intersects((int)laser.x - 1, (int)laser.y - 4, (int)laser.x + 1, (int)laser.y + 8)) {
                     hitBrick(brick);
                     laser.onHit();
+                    break;
                 }
+            }
+
+            if (laser.y < 0 || laser.destroyed()) {
+                remove(laser, LAYER_WORLD);
+                lasers.remove(laser);
             }
         }
     }
@@ -603,6 +602,13 @@ public class GamePlayScreen extends Scene {
             Laser laser = lasers.inUse.get(i);
             lasers.remove(laser);
             remove(laser, LAYER_WORLD);
+        }
+    }
+
+    private void removeOldBackground() {
+        if(oldBackground != null && oldBackground.alpha <= 0) {
+            remove(oldBackground, LAYER_BACKGROUND);
+            oldBackground = null;
         }
     }
 
@@ -617,17 +623,19 @@ public class GamePlayScreen extends Scene {
         updateLaserShot(gameTime);
     }
 
-    private void removeOldBackground() {
-        if(oldBackground != null && oldBackground.alpha <= 0) {
-            remove(oldBackground, LAYER_BACKGROUND);
-            oldBackground = null;
-        }
-    }
-
     @Override
     protected void draw(GameTime gameTime, Canvas canvas) {
-        canvas.drawARGB(255, 255, 255, 255);
+        canvas.drawARGB(255, 127, 127, 127);
         super.draw(gameTime, canvas);
+
+        if(shootingLaser && timeToLaser <= 0) {
+            paddle.getRect(tmpRect1);
+            tmpRect2.set(tmpRect1.left + LASER_MARGIN - laserReadyEffect.rect.width(), tmpRect1.centerY() - laserReadyEffect.rect.height(), tmpRect1.left + LASER_MARGIN + laserReadyEffect.rect.width(), tmpRect1.centerY() + laserReadyEffect.rect.height());
+            canvas.drawBitmap(laserReadyEffect.texture, laserReadyEffect.rect, tmpRect2, null);
+
+            tmpRect2.set(tmpRect1.right - LASER_MARGIN - laserReadyEffect.rect.width(), tmpRect1.centerY() - laserReadyEffect.rect.height(), tmpRect1.right - LASER_MARGIN + laserReadyEffect.rect.width(), tmpRect1.centerY() + laserReadyEffect.rect.height());
+            canvas.drawBitmap(laserReadyEffect.texture, laserReadyEffect.rect, tmpRect2, null);
+        }
     }
 
     @Override
@@ -643,6 +651,13 @@ public class GamePlayScreen extends Scene {
             if (Math.abs(paddle.getX() - event.x) < paddle.getWidth() &&
                     event.y > paddle.getY() - paddle.getWidth())
                 trackTouchId = event.pointerId;
+
+            if(shootingLaser && timeToLaser < 0) {
+                paddle.getRect(tmpRect1);
+                createLaser(tmpRect1.right - LASER_MARGIN, paddle.getY());
+                createLaser(tmpRect1.left + LASER_MARGIN, paddle.getY());
+                timeToLaser = LASER_DELAY;
+            }
         }
 
         if (trackTouchId == event.pointerId) {

@@ -52,16 +52,11 @@ public class ThreadedFrameBuffer extends SurfaceView implements FrameBuffer, Run
         renderThread.start();
     }
 
-    float seconds(long nanoTime) {
-        return nanoTime / 1000000000.0f;
-    }
-
     @Override
     public void run() {
         Rect dstRect = new Rect();
 
-        while ( running )
-        {
+        while ( running ) {
             if(!holder.getSurface().isValid())
                 continue;
 

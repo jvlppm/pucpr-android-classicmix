@@ -22,7 +22,7 @@
         android:title="@string/settings_category_performance"
         android:summary="@string/settings_category_performance_summary">
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="threaded_framebuffer"
             android:title="@string/settings_performance_threaded_framebuffer_title"
             android:summary="@string/settings_performance_threaded_framebuffer_summary"/>

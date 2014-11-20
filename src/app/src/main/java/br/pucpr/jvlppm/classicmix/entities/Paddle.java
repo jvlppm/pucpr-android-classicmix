@@ -11,7 +11,6 @@ public class Paddle extends GameEntity {
     private float x, y;
     private final NinePatch blueTexture, redTexture, shadowTexture;
     private NinePatch texture;
-    private final Assets assets;
     private final Rect rect;
     private final float MIN_WIDTH;
 
@@ -21,7 +20,7 @@ public class Paddle extends GameEntity {
     private float retractionRate;
 
     public Paddle() {
-        assets = Assets.getInstance();
+        Assets assets = Assets.getInstance();
         blueTexture = assets.paddleBlue;
         redTexture = assets.paddleRed;
         shadowTexture = assets.paddleShadow;
@@ -97,6 +96,9 @@ public class Paddle extends GameEntity {
     }
 
     public void setRetract(boolean retracting) {
+        if(retracting == this.retracting)
+            return;
+        resetWidth();
         this.retracting = retracting;
         texture = retracting? redTexture : blueTexture;
     }

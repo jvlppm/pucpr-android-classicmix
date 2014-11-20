@@ -39,13 +39,11 @@ public class Laser extends GameEntity {
     }
 
     public void onHit() {
-        frameIndex = 0;
-        frameTimeCount = 0;
         destroy = true;
     }
 
     public boolean destroyed() {
-        return destroy && frameTimeCount > 0.03f;
+        return destroy;
     }
 
     public void reset() {
