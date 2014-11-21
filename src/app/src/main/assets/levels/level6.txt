@@ -1,0 +1,11 @@
+[retract]
+ b b b b b b b b b
+y yEy y y yEy y y yEy
+y b b b b b b b b b y
+b         =B        b
+bL    b b =Bb b     bL
+b     b b b b b     b
+b                   b
+yLb b b       b b b yL
+r gLr rLrEbLrEr r gLr
+y gEy yLyPbPy yLy gEy

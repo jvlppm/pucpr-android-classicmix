@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class Assets {
     public Frame ballBlue;
     public Frame ballGray;
     public Frame ballShadow;
+    public Frame brickWhite;
     public Frame brickBlue;
     public Frame brickGray;
     public Frame brickGreen;
@@ -63,10 +65,44 @@ public class Assets {
     public List<Frame> laser;
 
     public final Map<String, Frame> byName;
+    private final Map<Integer, Frame> brickColors;
 
     private Assets() {
         listeners = new ArrayList<LoadListener>();
         byName = new HashMap<String, Frame>();
+        brickColors = new HashMap<Integer, Frame>();
+    }
+
+    public Frame createBrick(int color) {
+        if(brickColors.containsKey(color))
+            return brickColors.get(color);
+
+        Bitmap texture = Bitmap.createBitmap(brickWhite.texture.getWidth(), brickWhite.texture.getHeight(), Bitmap.Config.RGB_565);
+        for(int y = 0; y < texture.getHeight(); y++) {
+            for (int x = 0; x < texture.getWidth(); x++) {
+                int pixel = brickWhite.texture.getPixel(x, y);
+                float r = Color.red(pixel);
+                float g = Color.green(pixel);
+                float b = Color.blue(pixel);
+
+                r *= Color.red(color) / 255f;
+                g *= Color.green(color) / 255f;
+                b *= Color.blue(color) / 255f;
+
+                try {
+                    texture.setPixel(x, y, Color.argb(Color.alpha(pixel),
+                            (int) Math.max(0, Math.min(255, r)),
+                            (int) Math.max(0, Math.min(255, g)),
+                            (int) Math.max(0, Math.min(255, b))));
+                }
+                catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        Frame frame = new Frame(texture, brickWhite.rect, 1);
+        brickColors.put(color, frame);
+        return frame;
     }
 
     private void loadAssets(Context context) {

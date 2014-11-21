@@ -33,12 +33,13 @@ public class Brick extends GameEntity {
             this.stateFrame = Assets.getInstance().brickReinforcement;
     }
 
-    public void onBalHit() {
+    public void onBalHit(int force) {
         if(hitTimeCount < 0.3f)
             return;
         hitTimeCount = 0;
-        strength--;
+        strength -= force;
         int state = (int)((((float)strength / 6) * (breakingFrames.size() + 1)));
+        state = Math.max(0, state);
 
         if(state < breakingFrames.size())
             stateFrame = Assets.getInstance().brickStrength.get(state);

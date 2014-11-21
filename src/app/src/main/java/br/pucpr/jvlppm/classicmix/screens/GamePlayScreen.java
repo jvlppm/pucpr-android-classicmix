@@ -1,7 +1,10 @@
 package br.pucpr.jvlppm.classicmix.screens;
 
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.Log;
 
@@ -209,59 +212,133 @@ public class GamePlayScreen extends Scene {
             remove(brick, LAYER_WORLD);
         }
 
-        String word = "([^\\s\\[\\]=]+)";
-        Pattern configPattern = Pattern.compile("^\\[" + word + "(=" + word + ")?]\\s*$");
-
         bricks.clear();
 
         AssetManager am = game.getAssets();
         try {
-            InputStream is = am.open("levels/level" + (level + 1) + ".txt");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            int row = 0;
-            int minColumns = 8;
-            int maxColumns = minColumns;
-            while(true) {
-                String line = reader.readLine();
-                if (line == null)
-                    break;
+            loadFromText(level, am);
+        } catch (IOException eText) {
+            eText.printStackTrace();
+            try {
+                loadFromImage(level, am);
+            }
+            catch (IOException eImage) {
+                eImage.printStackTrace();
+                if (level > 0)
+                    loadLevelData(0);
+            }
+        }
+    }
 
-                Matcher m = configPattern.matcher(line);
+    private void loadFromImage(int level, AssetManager am) throws IOException {
+        Bitmap levelImage = getBitmap("levels/level" + (level + 1), am, true);
+        Bitmap strengthImage = getBitmap("levels/level" + (level + 1) + ".strength", am, false);
+        Bitmap itemsImage = getBitmap("levels/level" + (level + 1) + ".items", am, false);
 
-                if (m.matches()) {
-                    String key = m.group(1);
-                    String value = m.group(3);
-                    if("retract".equals(key))
-                        paddle.setRetract(!"false".equals(value));
+        for(int y = 0; y < levelImage.getHeight(); y++) {
+            for(int x = 0; x < levelImage.getWidth(); x++) {
+                int color = levelImage.getPixel(x, y);
+                if(Color.alpha(color) <= 80)
                     continue;
-                }
 
-                int lineColumns = (int)Math.ceil((float)line.length() / 2);
+                int strength = getStrength(strengthImage, x, y, color);
 
-                if(lineColumns > maxColumns)
-                    maxColumns = lineColumns;
+                Frame frame = Assets.getInstance().createBrick(color);
+                Brick bEntity = new Brick(frame, strength);
+                bEntity.x = x * frame.rect.width();
+                bEntity.y = y * frame.rect.height();
+                add(bEntity, LAYER_WORLD);
+                bEntity.itemCode = getItemCode(itemsImage, x, y);
+                bricks.add(bEntity);
+            }
+        }
 
-                for (int i = 0; i < line.length(); i += 2) {
-                    char brick = line.charAt(i);
-                    char item = '\0';
-                    if(i + 1 < line.length())
-                        item = line.charAt(i + 1);
-                    createBrick(brick, item, i / 2, row);
-                }
+        float scale = 8 / (float)levelImage.getWidth();
+        for(Brick brick : bricks) {
+            brick.setScale(scale);
+        }
+    }
 
-                row++;
+    private char getItemCode(Bitmap itemsImage, int x, int y) {
+        if (itemsImage != null) {
+            switch (itemsImage.getPixel(x, y)) {
+                case Color.GREEN:
+                    return 'l';
+                case Color.MAGENTA:
+                    return 'p';
+                case Color.CYAN:
+                    return 's';
+                case Color.YELLOW:
+                    return 'e';
+            }
+        }
+        return '\0';
+    }
+
+    private int getStrength(Bitmap strengthImage, int x, int y, int color) {
+        if(strengthImage != null) {
+            color = strengthImage.getPixel(x, y);
+        }
+        float brightness = (Color.red(color) + Color.green(color) + Color.blue(color)) / (255 * 3f);
+        return (int) (brightness * 6);
+    }
+
+    private Bitmap getBitmap(String name, AssetManager am, boolean throwOnError) throws IOException {
+        try {
+            InputStream is = am.open(name + ".png");
+            return BitmapFactory.decodeStream(is);
+        }
+        catch (IOException e) {
+            if(throwOnError)
+                throw e;
+            return null;
+        }
+    }
+
+    private void loadFromText(int level, AssetManager am) throws IOException {
+        String word = "([^\\s\\[\\]=]+)";
+        Pattern configPattern = Pattern.compile("^\\[" + word + "(=" + word + ")?]\\s*$");
+
+        InputStream is = am.open("levels/level" + (level + 1) + ".txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        int row = 0;
+        int minColumns = 8;
+        int maxColumns = minColumns;
+        while(true) {
+            String line = reader.readLine();
+            if (line == null)
+                break;
+
+            Matcher m = configPattern.matcher(line);
+
+            if (m.matches()) {
+                String key = m.group(1);
+                String value = m.group(3);
+                if("retract".equals(key))
+                    paddle.setRetract(!"false".equals(value));
+                continue;
             }
 
-            float scale = minColumns / (float)maxColumns;
+            int lineColumns = (int)Math.ceil((float)line.length() / 2);
 
-            for(Brick brick : bricks) {
-                brick.setScale(scale);
+            if(lineColumns > maxColumns)
+                maxColumns = lineColumns;
+
+            for (int i = 0; i < line.length(); i += 2) {
+                char brick = line.charAt(i);
+                char item = '\0';
+                if(i + 1 < line.length())
+                    item = line.charAt(i + 1);
+                createBrick(brick, item, i / 2, row);
             }
 
-        } catch (IOException e) {
-            if(level > 0)
-                loadLevelData(0);
-            e.printStackTrace();
+            row++;
+        }
+
+        float scale = minColumns / (float)maxColumns;
+
+        for(Brick brick : bricks) {
+            brick.setScale(scale);
         }
     }
 
@@ -285,7 +362,7 @@ public class GamePlayScreen extends Scene {
         bEntity.x = col * frame.rect.width();
         bEntity.y = row * frame.rect.height();
         add(bEntity, LAYER_WORLD);
-        bEntity.itemCode = item;
+        bEntity.itemCode = Character.toLowerCase(item);
         bricks.add(bEntity);
     }
 
@@ -431,7 +508,7 @@ public class GamePlayScreen extends Scene {
                     continue;
 
                 if (tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
-                    hitBrick(brick);
+                    hitBrick(brick, piercing + 1);
                     if(piercing <= 0 || brick.strength > 0)
                         ball.onObjectCollision(tmpRect1, tmpRect2, false);
                 }
@@ -443,8 +520,8 @@ public class GamePlayScreen extends Scene {
         }
     }
 
-    private void hitBrick(Brick brick) {
-        brick.onBalHit();
+    private void hitBrick(Brick brick, int strength) {
+        brick.onBalHit(strength);
         if(brick.strength > 1)
             score.add((int)(30 * defaultScoreMultiplier));
 
@@ -595,7 +672,7 @@ public class GamePlayScreen extends Scene {
                 brick.getRect(tmpRect2);
 
                 if(tmpRect2.intersects((int)laser.x - 1, (int)laser.y - 4, (int)laser.x + 1, (int)laser.y + 8)) {
-                    hitBrick(brick);
+                    hitBrick(brick, shootingLaser);
                     laser.onHit();
                     break;
                 }
