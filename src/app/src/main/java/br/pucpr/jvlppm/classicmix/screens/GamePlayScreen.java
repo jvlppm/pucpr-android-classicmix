@@ -121,19 +121,19 @@ public class GamePlayScreen extends Scene {
                 defaultLives = 5;
                 defaultBallSpeed = 300;
                 defaultScoreMultiplier = 0.5f;
-                paddle.setRetractionRate(0.5f);
+                paddle.setRetractionRate(1f);
                 break;
             case Hard:
                 defaultBallSpeed = 600;
                 defaultLives = 2;
                 defaultScoreMultiplier = 1.2f;
-                paddle.setRetractionRate(0.75f);
+                paddle.setRetractionRate(1.5f);
                 break;
             default:
                 defaultBallSpeed = 500;
                 defaultLives = 3;
                 defaultScoreMultiplier = 1f;
-                paddle.setRetractionRate(1);
+                paddle.setRetractionRate(2f);
                 break;
         }
 
@@ -415,7 +415,7 @@ public class GamePlayScreen extends Scene {
             shootingLaser = 0;
         }
         else {
-            piercing = Math.max(0, piercing - 1);
+            piercing = Math.max(0, piercing / 2);
             shootingLaser = Math.max(0, shootingLaser - 1);
         }
     }
