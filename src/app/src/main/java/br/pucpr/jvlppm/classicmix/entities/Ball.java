@@ -72,6 +72,10 @@ public class Ball extends GameEntity {
             float angle = velocity.toDegrees();
             Vector.fromDegrees(angle + angleChange, velocity);
             velocity.setLength(speed);
+            if (Math.abs(velocity.dy) < 0.01f) {
+                velocity.dy = velocity.dx;
+                velocity.setLength(speed);
+            }
         }
     }
 

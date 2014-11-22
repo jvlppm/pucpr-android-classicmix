@@ -425,7 +425,7 @@ public class GamePlayScreen extends Scene {
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
-        startLevel(0);
+        startLevel(5);
     }
 
     private void startBallMovement() {
@@ -509,6 +509,9 @@ public class GamePlayScreen extends Scene {
     private void dropItems(Brick brick) {
         Frame frame;
         switch (brick.itemCode) {
+            case 'b':
+                frame = Assets.getInstance().itemBall;
+                break;
             case 's':
                 frame = Assets.getInstance().itemSlowBall;
                 break;
@@ -602,6 +605,14 @@ public class GamePlayScreen extends Scene {
                     ball.setVelocity(ball.getVelocity() * (1 - 0.4f * ballSlowEffect));
                 ballSlowEffect *= 0.6f;
             }
+            else if(item.frame == assets.itemBall) {
+                List<Ball> newBalls = new ArrayList<Ball>();
+                for(Ball ball : balls)
+                    newBalls.add(splitBall(ball, 20));
+
+                for(Ball nBall : newBalls)
+                    balls.add(nBall);
+            }
             else if(item.frame == assets.itemPierce) {
                 piercing++;
             }
@@ -612,6 +623,30 @@ public class GamePlayScreen extends Scene {
                 paddle.setWidth(paddle.getWidth() + 30);
             }
         }
+    }
+
+    private Ball splitBall(Ball ball, float angle) {
+        ball.getVelocity(tmpVector);
+
+        Ball nBall = new Ball();
+        nBall.x = ball.x;
+        nBall.y = ball.y;
+        nBall.setVelocity(tmpVector.dx, tmpVector.dy);
+
+        addAngle(ball, angle);
+        addAngle(nBall, -angle);
+
+        add(nBall, Layer.WORLD);
+        return nBall;
+    }
+
+    private void addAngle(Ball ball, float addAngle) {
+        float ballSpeed = ball.getVelocity();
+        ball.getVelocity(tmpVector);
+
+        float angle = tmpVector.toDegrees() + addAngle;
+        Vector.fromDegrees(angle, tmpVector);
+        ball.setVelocity(tmpVector.dx * ballSpeed, tmpVector.dy * ballSpeed);
     }
 
     private void destroyBall(Ball ball) {

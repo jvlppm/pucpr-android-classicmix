@@ -1,11 +1,11 @@
 [retract]
  b b b b b b b b b
-y yEy y y yEy y y yEy
+y yEypy y yEy y ypyEy
 y b b b b b b b b b y
-b         =B        b
-bL    b b =Bb b     bL
+b         gB        b
+bL    b b gBb b     bL
 b     b b b b b     b
 b                   b
 yLb b b       b b b yL
-r gLr rLrEbLrEr r gLr
+r gL= =L=EbL=E= = gLr
 y gEy yLyPbPy yLy gEy

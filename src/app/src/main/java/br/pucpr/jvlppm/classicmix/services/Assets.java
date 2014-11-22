@@ -60,6 +60,7 @@ public class Assets {
     public Frame itemLaser;
     public Frame itemPierce;
     public Frame itemSlowBall;
+    public Frame itemBall;
     public Frame bottomBar;
     public List<Frame> background;
     public List<Frame> laser;
