@@ -415,7 +415,7 @@ public class GamePlayScreen extends Scene {
             shootingLaser = 0;
         }
         else {
-            piercing = Math.max(0, piercing / 2);
+            piercing = Math.max(0, piercing - 1);
             shootingLaser = Math.max(0, shootingLaser - 1);
         }
     }
@@ -476,9 +476,11 @@ public class GamePlayScreen extends Scene {
                     continue;
 
                 if (tmpRect1.intersects(tmpRect2.left, tmpRect2.top, tmpRect2.right, tmpRect2.bottom)) {
-                    hitBrick(brick, piercing + 1);
-                    if(piercing <= 0 || brick.strength > 0)
+                    hitBrick(brick, piercing / 2 + 1);
+                    if(piercing <= 0 || brick.strength > 0) {
                         ball.onObjectCollision(tmpRect1, tmpRect2, false);
+                        break;
+                    }
                 }
             }
         }
