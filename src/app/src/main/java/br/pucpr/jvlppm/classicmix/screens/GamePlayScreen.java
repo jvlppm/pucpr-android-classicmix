@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +17,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import br.pucpr.jvlppm.classicmix.GameState;
+import br.pucpr.jvlppm.classicmix.Layer;
 import br.pucpr.jvlppm.classicmix.Side;
 import br.pucpr.jvlppm.classicmix.core.Frame;
 import br.pucpr.jvlppm.classicmix.core.GameActivity;
@@ -26,7 +27,7 @@ import br.pucpr.jvlppm.classicmix.core.Pool;
 import br.pucpr.jvlppm.classicmix.core.Scene;
 import br.pucpr.jvlppm.classicmix.core.TouchEvent;
 import br.pucpr.jvlppm.classicmix.core.Vector;
-import br.pucpr.jvlppm.classicmix.entities.Background;
+import br.pucpr.jvlppm.classicmix.entities.BackgroundManager;
 import br.pucpr.jvlppm.classicmix.entities.Ball;
 import br.pucpr.jvlppm.classicmix.entities.Brick;
 import br.pucpr.jvlppm.classicmix.entities.ExtraLifeCounter;
@@ -41,13 +42,7 @@ import br.pucpr.jvlppm.classicmix.services.Settings;
 import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class GamePlayScreen extends Scene {
-    private static enum State { WAITING_RELEASE, POSITION, PLAYING, GAME_OVER };
-    private final static int LAYER_BACKGROUND = 0;
-    private final static int LAYER_WORLD = 1;
-    private final static int LAYER_GUI = 2;
-    private final static int LASER_MARGIN = 12;
-
-    static final String Tag = "GamePlayScreen";
+    private static final int LASER_MARGIN = 12;
 
     // Game Objects
     private final Score score;
@@ -57,8 +52,7 @@ public class GamePlayScreen extends Scene {
     private final List<Brick> bricks;
     private final List<Item> fallingItems;
     private final Pool<Laser> lasers;
-    private Background currentBackground;
-    private Background oldBackground;
+    private final BackgroundManager background;
     private final Image msgMoveToBegin;
     private final Image msgGameOver;
     private final Frame laserReadyEffect;
@@ -71,11 +65,8 @@ public class GamePlayScreen extends Scene {
     private final int defaultLives;
     private final float defaultScoreMultiplier;
 
-    // Constants
-    private final float LASER_DELAY = 1;
-
     // Game State
-    private State state;
+    private GameState state;
     private int currentLevel;
 
     // Items
@@ -96,17 +87,19 @@ public class GamePlayScreen extends Scene {
         super(game, finishListener);
 
         Assets assets = Assets.getInstance();
-        add(new Image(assets.bottomBar, Image.Alignment.Bottom), LAYER_GUI);
+        add(new Image(assets.bottomBar, Image.Alignment.Bottom), Layer.GUI);
 
         score = new Score();
-        add(score, LAYER_GUI);
+        add(score, Layer.GUI);
 
         lifeCounter = new ExtraLifeCounter();
         lifeCounter.setPosition(game.getFrameBufferWidth(), game.getFrameBufferHeight() - 8);
-        add(lifeCounter, LAYER_GUI);
+        add(lifeCounter, Layer.GUI);
 
+        background = new BackgroundManager(game.getFrameBufferWidth(), game.getFrameBufferHeight());
+        add(background, Layer.BACKGROUND);
         paddle = new Paddle();
-        add(paddle, LAYER_WORLD);
+        add(paddle, Layer.WORLD);
         balls = new ArrayList<Ball>();
         bricks = new ArrayList<Brick>();
         fallingItems = new ArrayList<Item>();
@@ -145,7 +138,7 @@ public class GamePlayScreen extends Scene {
         }
 
         if (Settings.Graphics.displayFps())
-            add(new FPS(), LAYER_GUI);
+            add(new FPS(), Layer.GUI);
 
         reset();
     }
@@ -157,42 +150,42 @@ public class GamePlayScreen extends Scene {
         removeLasers();
         removeAllBalls();
         loadLevelData(level);
-        setBackground(level);
+        background.set(level);
         Sound.getInstance().playLevelMusic(level);
 
         if (trackTouchId >= 0)
-            setState(State.WAITING_RELEASE);
+            setState(GameState.WAITING_RELEASE);
         else {
             replaceBall(false);
         }
     }
 
-    private void setState(State state) {
+    private void setState(GameState state) {
         if(this.state == state)
             return;
 
         if(this.state != null) {
             switch (this.state) {
                 case POSITION:
-                    remove(msgMoveToBegin, LAYER_GUI);
+                    remove(msgMoveToBegin, Layer.GUI);
                     break;
                 case GAME_OVER:
-                    remove(msgGameOver, LAYER_GUI);
+                    remove(msgGameOver, Layer.GUI);
                     break;
             }
         }
 
-        paddle.setPlaying(state == State.PLAYING);
+        paddle.setPlaying(state == GameState.PLAYING);
 
         switch (state) {
             case POSITION:
-                add(msgMoveToBegin, LAYER_GUI);
+                add(msgMoveToBegin, Layer.GUI);
                 break;
             case PLAYING:
                 startBallMovement();
-                remove(msgMoveToBegin, LAYER_GUI);
+                remove(msgMoveToBegin, Layer.GUI);
                 break;
-            case GAME_OVER: add(msgGameOver, LAYER_GUI); break;
+            case GAME_OVER: add(msgGameOver, Layer.GUI); break;
         }
         this.state = state;
     }
@@ -209,7 +202,7 @@ public class GamePlayScreen extends Scene {
 
         for (int brickI = 0; brickI < bricks.size(); brickI++) {
             Brick brick = bricks.get(brickI);
-            remove(brick, LAYER_WORLD);
+            remove(brick, Layer.WORLD);
         }
 
         bricks.clear();
@@ -247,7 +240,7 @@ public class GamePlayScreen extends Scene {
                 Brick bEntity = new Brick(frame, strength);
                 bEntity.x = x * frame.rect.width();
                 bEntity.y = y * frame.rect.height();
-                add(bEntity, LAYER_WORLD);
+                add(bEntity, Layer.WORLD);
                 bEntity.itemCode = getItemCode(itemsImage, x, y);
                 bricks.add(bEntity);
             }
@@ -361,34 +354,9 @@ public class GamePlayScreen extends Scene {
         Brick bEntity = new Brick(frame, strength);
         bEntity.x = col * frame.rect.width();
         bEntity.y = row * frame.rect.height();
-        add(bEntity, LAYER_WORLD);
+        add(bEntity, Layer.WORLD);
         bEntity.itemCode = Character.toLowerCase(item);
         bricks.add(bEntity);
-    }
-
-    private void setBackground(int level) {
-        if (Settings.Graphics.getBackgroundOpacity() <= 0)
-            return;
-
-        List<Frame> backgrounds = Assets.getInstance().background;
-        if(level >= backgrounds.size())
-            level = 0;
-        Frame backgroundImage = backgrounds.get(level);
-        if (backgroundImage != null) {
-            Background background = new Background(
-                    backgroundImage,
-                    game.getFrameBufferWidth(),
-                    game.getFrameBufferHeight());
-
-            if(currentBackground != null) {
-                oldBackground = currentBackground;
-                background.fadeIn(oldBackground);
-                oldBackground.fadeOut();
-            }
-
-            currentBackground = background;
-            add(background, LAYER_BACKGROUND);
-        }
     }
 
     private void loseLife() {
@@ -400,7 +368,7 @@ public class GamePlayScreen extends Scene {
         Sound.getInstance().playExplosion();
 
         if (trackTouchId >= 0)
-            setState(State.WAITING_RELEASE);
+            setState(GameState.WAITING_RELEASE);
         else
             replaceBall(true);
     }
@@ -415,19 +383,19 @@ public class GamePlayScreen extends Scene {
             ball.x = game.getFrameBufferWidth() / 2;
             ball.y = game.getFrameBufferHeight() * 0.6f;
             balls.add(ball);
-            add(ball, LAYER_WORLD);
+            add(ball, Layer.WORLD);
 
-            setState(State.POSITION);
+            setState(GameState.POSITION);
         }
         else {
-            setState(State.GAME_OVER);
+            setState(GameState.GAME_OVER);
         }
     }
 
     private void removeAllBalls() {
         for (int brickI = 0; brickI < balls.size(); brickI++) {
             Ball ball = balls.get(brickI);
-            remove(ball, LAYER_WORLD);
+            remove(ball, Layer.WORLD);
         }
         balls.clear();
     }
@@ -435,7 +403,7 @@ public class GamePlayScreen extends Scene {
     private void removeFallingItems() {
         for (int itemI = 0; itemI < fallingItems.size(); itemI++) {
             Item item = fallingItems.get(itemI);
-            remove(item, LAYER_WORLD);
+            remove(item, Layer.WORLD);
         }
         fallingItems.clear();
     }
@@ -526,7 +494,7 @@ public class GamePlayScreen extends Scene {
             score.add((int)(30 * defaultScoreMultiplier));
 
         if (brick.strength <= 0) {
-            remove(brick, LAYER_WORLD);
+            remove(brick, Layer.WORLD);
             dropItems(brick);
             bricks.remove(brick);
             score.add((int)(100 * defaultScoreMultiplier));
@@ -556,7 +524,7 @@ public class GamePlayScreen extends Scene {
 
         brick.getRect(tmpRect1);
         Item item = new Item(frame, tmpRect1.centerX(), tmpRect1.centerY());
-        add(item, LAYER_WORLD);
+        add(item, Layer.WORLD);
         fallingItems.add(item);
     }
 
@@ -590,7 +558,6 @@ public class GamePlayScreen extends Scene {
                 degrees = Math.min(315, Math.max(225, degrees));
                 Vector.fromDegrees(degrees, tmpVector);
                 ball.setVelocity(tmpVector.dx * speed, tmpVector.dy * speed);
-                Log.d(Tag, "degrees: " + degrees);
                 continue;
             }
 
@@ -616,13 +583,13 @@ public class GamePlayScreen extends Scene {
             item.getRect(tmpRect1);
             if(tmpRect1.top > game.getFrameBufferHeight()) {
                 fallingItems.remove(i);
-                remove(item, LAYER_WORLD);
+                remove(item, Layer.WORLD);
                 continue;
             }
 
             if(!tmpRect2.intersects(tmpRect1.left, tmpRect1.top, tmpRect1.right, tmpRect1.bottom))
                 continue;
-            remove(item, LAYER_WORLD);
+            remove(item, Layer.WORLD);
             fallingItems.remove(i);
 
             score.add((int)(200 * defaultScoreMultiplier));
@@ -647,7 +614,7 @@ public class GamePlayScreen extends Scene {
 
     private void destroyBall(Ball ball) {
         balls.remove(ball);
-        remove(ball, LAYER_WORLD);
+        remove(ball, Layer.WORLD);
         if(balls.isEmpty()) {
             loseLife();
         }
@@ -658,7 +625,7 @@ public class GamePlayScreen extends Scene {
         laser.reset();
         laser.x = x;
         laser.y = y;
-        add(laser, LAYER_WORLD);
+        add(laser, Layer.WORLD);
     }
 
     private void updateLaserShot(GameTime gameTime) {
@@ -679,7 +646,7 @@ public class GamePlayScreen extends Scene {
             }
 
             if (laser.y < 0 || laser.destroyed()) {
-                remove(laser, LAYER_WORLD);
+                remove(laser, Layer.WORLD);
                 lasers.remove(laser);
             }
         }
@@ -689,14 +656,7 @@ public class GamePlayScreen extends Scene {
         for(int i = lasers.inUse.size() - 1; i >= 0; i--) {
             Laser laser = lasers.inUse.get(i);
             lasers.remove(laser);
-            remove(laser, LAYER_WORLD);
-        }
-    }
-
-    private void removeOldBackground() {
-        if(oldBackground != null && oldBackground.alpha <= 0) {
-            remove(oldBackground, LAYER_BACKGROUND);
-            oldBackground = null;
+            remove(laser, Layer.WORLD);
         }
     }
 
@@ -707,7 +667,6 @@ public class GamePlayScreen extends Scene {
         checkBrickCollisions();
         checkPaddleCollisions();
         checkFallingItems();
-        removeOldBackground();
         updateLaserShot(gameTime);
     }
 
@@ -728,7 +687,7 @@ public class GamePlayScreen extends Scene {
 
     @Override
     public void handleTouch(TouchEvent event) {
-        if (state == State.GAME_OVER) {
+        if (state == GameState.GAME_OVER) {
             if(event.type == TouchEvent.Type.RELEASE) {
                 reset();
             }
@@ -744,21 +703,22 @@ public class GamePlayScreen extends Scene {
                 paddle.getRect(tmpRect1);
                 createLaser(tmpRect1.right - LASER_MARGIN, paddle.getY());
                 createLaser(tmpRect1.left + LASER_MARGIN, paddle.getY());
+                float LASER_DELAY = 1;
                 timeToLaser = LASER_DELAY;
             }
         }
 
         if (trackTouchId == event.pointerId) {
             if (event.type == TouchEvent.Type.RELEASE) {
-                if(state == State.WAITING_RELEASE) {
+                if(state == GameState.WAITING_RELEASE) {
                     replaceBall(lostLife);
                 }
-                else if(state == State.POSITION) {
-                    setState(State.PLAYING);
+                else if(state == GameState.POSITION) {
+                    setState(GameState.PLAYING);
                 }
                 trackTouchId = -1;
             }
-            else if (state != State.WAITING_RELEASE)
+            else if (state != GameState.WAITING_RELEASE)
                 paddle.setPosition(event.x, paddle.getY());
         }
     }

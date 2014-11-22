@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import br.pucpr.jvlppm.classicmix.Layer;
 import br.pucpr.jvlppm.classicmix.entities.GameEntity;
 
 public class Scene<T> {
@@ -17,19 +18,19 @@ public class Scene<T> {
 
     public final GameActivity game;
     private final FinishListener<T> finishListener;
-    private final TreeMap<Integer, List<GameEntity>> entities;
+    private final TreeMap<Layer, List<GameEntity>> entities;
     private final List<Runnable> pendingOperations;
     private boolean ignorePendingOperations;
 
     public Scene(GameActivity game, FinishListener<T> finishListener) {
         this.game = game;
         this.finishListener = finishListener;
-        entities = new TreeMap<Integer, List<GameEntity>>();
+        entities = new TreeMap<Layer, List<GameEntity>>();
         pendingOperations = new ArrayList<Runnable>();
     }
 
     protected void update(GameTime gameTime) {
-        for (Integer layer : entities.keySet()) {
+        for (Layer layer : entities.keySet()) {
             List<GameEntity> layerEntities = entities.get(layer);
             for(int i  = 0; i < layerEntities.size(); i++) {
                 GameEntity entity = layerEntities.get(i);
@@ -60,7 +61,7 @@ public class Scene<T> {
     }
 
     protected void draw(GameTime gameTime, Canvas canvas) {
-        for (Integer layer : entities.keySet()) {
+        for (Layer layer : entities.keySet()) {
             for (GameEntity entity : entities.get(layer))
                 entity.draw(gameTime, canvas);
         }
@@ -70,7 +71,7 @@ public class Scene<T> {
         finishListener.onFinished(result);
     }
 
-    public void add(GameEntity entity, int layer) {
+    public void add(GameEntity entity, Layer layer) {
         if(entities.containsKey(layer))
             entities.get(layer).add(entity);
         else {
@@ -80,7 +81,7 @@ public class Scene<T> {
         }
     }
 
-    public void remove(GameEntity entity, int layer) {
+    public void remove(GameEntity entity, Layer layer) {
         if(entities.containsKey(layer))
             entities.get(layer).remove(entity);
     }
