@@ -66,8 +66,8 @@ public class GameEntity {
             return;
         float drawW = frame.rect.width() * scale;
         float drawH = frame.rect.height() * scale;
-        float drawX = x - drawW * originX * scale;
-        float drawY = y - drawH * originY * scale;
+        float drawX = x - drawW * originX;
+        float drawY = y - drawH * originY;
 
         tmpRect.set((int)drawX, (int)drawY, (int)(drawX + drawW), (int)(drawY + drawH));
         canvas.drawBitmap(frame.texture, frame.rect, tmpRect, null);

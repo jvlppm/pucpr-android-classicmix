@@ -15,6 +15,7 @@ public class Laser extends GameEntity {
     public float x, y;
     public final float speed = 500;
     private boolean destroy;
+    public float strength;
 
     public Laser() {
         frames = Assets.getInstance().laser;
@@ -29,7 +30,8 @@ public class Laser extends GameEntity {
 
     @Override
     public void draw(GameTime gameTime, Canvas canvas) {
-        draw(canvas, frames.get(frameIndex), x, y, 0.5f, 0.5f);
+        float scale = 1 + (strength - 1) / 3;
+        draw(canvas, frames.get(frameIndex), x, y, 0.5f, 0.5f, scale);
         frameTimeCount += gameTime.getElapsedTime();
         if(!destroy && frameIndex < frames.size() - 1 && frameTimeCount > 0.1f) {
             frameIndex++;

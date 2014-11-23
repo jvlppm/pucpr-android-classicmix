@@ -43,6 +43,7 @@ import br.pucpr.jvlppm.classicmix.services.Sound;
 
 public class GamePlayScreen extends Scene {
     private static final int LASER_MARGIN = 12;
+    private static final float LASER_DELAY = 1;
 
     // Game Objects
     private final Score score;
@@ -415,6 +416,7 @@ public class GamePlayScreen extends Scene {
             piercing = Math.max(0, piercing - 1);
             shootingLaser = Math.max(0, shootingLaser - 1);
         }
+        timeToLaser = 0;
     }
 
     private void reset() {
@@ -487,7 +489,7 @@ public class GamePlayScreen extends Scene {
         }
     }
 
-    private void hitBrick(Brick brick, int strength) {
+    private void hitBrick(Brick brick, float strength) {
         brick.onBalHit(strength);
         if(brick.strength > 1)
             score.add((int)(30 * defaultScoreMultiplier));
@@ -653,17 +655,22 @@ public class GamePlayScreen extends Scene {
         }
     }
 
-    private void createLaser(float x, float y) {
+    private void createLaser(float x, float y, float strength) {
         Laser laser = lasers.getNew();
         laser.reset();
         laser.x = x;
         laser.y = y;
+        laser.strength = strength;
         add(laser, Layer.WORLD);
     }
 
     private void updateLaserShot(GameTime gameTime) {
-        if(shootingLaser > 0) {
-            timeToLaser -= gameTime.getElapsedTime();
+        if(shootingLaser > 0 && state == GameState.PLAYING) {
+            timeToLaser += gameTime.getElapsedTime() * shootingLaser / 1.5f;
+            if(timeToLaser >= LASER_DELAY * 2)
+                shootLasers();
+            else
+                timeToLaser = Math.min(LASER_DELAY * 2, timeToLaser);
         }
         for(int li = lasers.inUse.size() - 1; li >= 0; li--) {
             Laser laser = lasers.inUse.get(li);
@@ -672,7 +679,7 @@ public class GamePlayScreen extends Scene {
                 brick.getRect(tmpRect2);
 
                 if(tmpRect2.intersects((int)laser.x - 1, (int)laser.y - 4, (int)laser.x + 1, (int)laser.y + 8)) {
-                    hitBrick(brick, shootingLaser);
+                    hitBrick(brick, laser.strength);
                     laser.onHit();
                     break;
                 }
@@ -708,12 +715,25 @@ public class GamePlayScreen extends Scene {
         canvas.drawARGB(255, 127, 127, 127);
         super.draw(gameTime, canvas);
 
-        if(shootingLaser > 0 && timeToLaser <= 0) {
+        if(shootingLaser > 0 && timeToLaser > LASER_DELAY / 8) {
+            float scale = Math.min(3, timeToLaser / LASER_DELAY);
+            scale = 1 + (scale - 1) / 3;
+
+            int width = (int)(laserReadyEffect.rect.width() * scale);
+            int height = (int)(laserReadyEffect.rect.height() * scale);
+
             paddle.getRect(tmpRect1);
-            tmpRect2.set(tmpRect1.left + LASER_MARGIN - laserReadyEffect.rect.width(), tmpRect1.centerY() - laserReadyEffect.rect.height(), tmpRect1.left + LASER_MARGIN + laserReadyEffect.rect.width(), tmpRect1.centerY() + laserReadyEffect.rect.height());
+            tmpRect2.set(
+                    tmpRect1.left + LASER_MARGIN - width,
+                    tmpRect1.centerY() - height,
+                    tmpRect1.left + LASER_MARGIN + width,
+                    tmpRect1.centerY() + height);
             canvas.drawBitmap(laserReadyEffect.texture, laserReadyEffect.rect, tmpRect2, null);
 
-            tmpRect2.set(tmpRect1.right - LASER_MARGIN - laserReadyEffect.rect.width(), tmpRect1.centerY() - laserReadyEffect.rect.height(), tmpRect1.right - LASER_MARGIN + laserReadyEffect.rect.width(), tmpRect1.centerY() + laserReadyEffect.rect.height());
+            tmpRect2.set(tmpRect1.right - LASER_MARGIN - width,
+                    tmpRect1.centerY() - height,
+                    tmpRect1.right - LASER_MARGIN + width,
+                    tmpRect1.centerY() + height);
             canvas.drawBitmap(laserReadyEffect.texture, laserReadyEffect.rect, tmpRect2, null);
         }
     }
@@ -732,13 +752,7 @@ public class GamePlayScreen extends Scene {
                     event.y > paddle.getY() - paddle.getWidth())
                 trackTouchId = event.pointerId;
 
-            if(shootingLaser > 0 && timeToLaser < 0) {
-                paddle.getRect(tmpRect1);
-                createLaser(tmpRect1.right - LASER_MARGIN, paddle.getY());
-                createLaser(tmpRect1.left + LASER_MARGIN, paddle.getY());
-                float LASER_DELAY = 1;
-                timeToLaser = LASER_DELAY;
-            }
+            shootLasers();
         }
 
         if (trackTouchId == event.pointerId) {
@@ -753,6 +767,15 @@ public class GamePlayScreen extends Scene {
             }
             else if (state != GameState.WAITING_RELEASE)
                 paddle.setPosition(event.x, paddle.getY());
+        }
+    }
+
+    private void shootLasers() {
+        if(shootingLaser > 0 && timeToLaser > LASER_DELAY / 8) {
+            paddle.getRect(tmpRect1);
+            createLaser(tmpRect1.right - LASER_MARGIN, paddle.getY(), timeToLaser / LASER_DELAY);
+            createLaser(tmpRect1.left + LASER_MARGIN, paddle.getY(), timeToLaser / LASER_DELAY);
+            timeToLaser = 0;
         }
     }
 }

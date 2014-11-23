@@ -16,8 +16,8 @@ import br.pucpr.jvlppm.classicmix.services.Settings;
 public class Brick extends GameEntity {
     private float hitTimeCount;
     public float x, y;
-    public int strength;
-    public final int initialStrength;
+    public float strength;
+    public final float initialStrength;
     private Frame stateFrame;
     private final Frame brickFrame, shadowFrame;
     private final List<Frame> breakingFrames;
@@ -27,7 +27,7 @@ public class Brick extends GameEntity {
     private Frame cache;
     private float xOffset, yOffset;
 
-    public Brick(Frame frame, int strength, float scale) {
+    public Brick(Frame frame, float strength, float scale) {
         this.initialStrength = strength;
         this.strength = strength;
         this.brickFrame = frame;
@@ -41,7 +41,7 @@ public class Brick extends GameEntity {
             updateImage();
     }
 
-    public void onBalHit(int force) {
+    public void onBalHit(float force) {
         if(hitTimeCount < 0.3f)
             return;
         hitTimeCount = 0;
