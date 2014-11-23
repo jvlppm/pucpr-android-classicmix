@@ -120,8 +120,8 @@ public class GamePlayScreen extends Scene {
         switch (Settings.Gameplay.getDifficulty()) {
             case Easy:
                 defaultLives = 5;
-                defaultBallSpeed = 300;
-                defaultScoreMultiplier = 0.5f;
+                defaultBallSpeed = 400;
+                defaultScoreMultiplier = 0.75f;
                 paddle.setRetractionRate(1f);
                 break;
             case Hard:

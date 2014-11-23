@@ -83,8 +83,8 @@ public class Brick extends GameEntity {
         if(this.cache == null) {
             bmp = Bitmap.createBitmap((int) (shadowFrame.rect.width() * scale), (int) (shadowFrame.rect.height() * scale), Bitmap.Config.ARGB_4444);
             this.cache = new Frame(bmp, new Rect(0, 0, bmp.getWidth(), bmp.getHeight()), 1);
-            xOffset = 15;
-            yOffset = 15;
+            xOffset = 14 * scale;
+            yOffset = 14 * scale;
         }
         else {
             bmp = this.cache.texture;
