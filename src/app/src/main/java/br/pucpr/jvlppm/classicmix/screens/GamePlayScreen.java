@@ -228,6 +228,8 @@ public class GamePlayScreen extends Scene {
         Bitmap strengthImage = getBitmap("levels/level" + (level + 1) + ".strength", am, false);
         Bitmap itemsImage = getBitmap("levels/level" + (level + 1) + ".items", am, false);
 
+        float scale = 8 / (float)levelImage.getWidth();
+
         for(int y = 0; y < levelImage.getHeight(); y++) {
             for(int x = 0; x < levelImage.getWidth(); x++) {
                 int color = levelImage.getPixel(x, y);
@@ -237,18 +239,13 @@ public class GamePlayScreen extends Scene {
                 int strength = getStrength(strengthImage, x, y, color);
 
                 Frame frame = Assets.getInstance().createBrick(color);
-                Brick bEntity = new Brick(frame, strength);
+                Brick bEntity = new Brick(frame, strength, scale);
                 bEntity.x = x * frame.rect.width();
                 bEntity.y = y * frame.rect.height();
                 add(bEntity, Layer.WORLD);
                 bEntity.itemCode = getItemCode(itemsImage, x, y);
                 bricks.add(bEntity);
             }
-        }
-
-        float scale = 8 / (float)levelImage.getWidth();
-        for(Brick brick : bricks) {
-            brick.setScale(scale);
         }
     }
 
@@ -351,7 +348,7 @@ public class GamePlayScreen extends Scene {
         }
         if(frame == null)
             return;
-        Brick bEntity = new Brick(frame, strength);
+        Brick bEntity = new Brick(frame, strength, -1);
         bEntity.x = col * frame.rect.width();
         bEntity.y = row * frame.rect.height();
         add(bEntity, Layer.WORLD);
@@ -425,7 +422,7 @@ public class GamePlayScreen extends Scene {
         score.reset();
         lifeCounter.setExtraLives(defaultLives);
         resetPaddle();
-        startLevel(5);
+        startLevel(0);
     }
 
     private void startBallMovement() {
@@ -527,8 +524,7 @@ public class GamePlayScreen extends Scene {
             default: return;
         }
 
-        brick.getRect(tmpRect1);
-        Item item = new Item(frame, tmpRect1.centerX(), tmpRect1.centerY());
+        Item item = new Item(frame, brick.centerX(), brick.centerY());
         add(item, Layer.WORLD);
         fallingItems.add(item);
     }

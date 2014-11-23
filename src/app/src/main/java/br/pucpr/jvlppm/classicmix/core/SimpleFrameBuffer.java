@@ -10,6 +10,7 @@ public class SimpleFrameBuffer extends View implements FrameBuffer {
     //private long currentTime;
     //private float pendingUpdate;
     private final Rect canvasRect;
+    private boolean running;
 
     private final Bitmap frameBuffer;
     private final Canvas frameBufferCanvas;
@@ -28,9 +29,12 @@ public class SimpleFrameBuffer extends View implements FrameBuffer {
     }
 
     public void pause() {
+        running = false;
     }
 
     public void resume() {
+        running = true;
+        invalidate();
     }
 
 //    float seconds(long nanoTime) {
@@ -57,7 +61,8 @@ public class SimpleFrameBuffer extends View implements FrameBuffer {
         canvas.getClipBounds(canvasRect);
         canvas.drawBitmap(frameBuffer, null, canvasRect, null);
 
-        invalidate();
+        if (running)
+            invalidate();
     }
 
     public int getFrameBufferWidth() {

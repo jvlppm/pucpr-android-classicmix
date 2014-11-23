@@ -1,6 +1,9 @@
 package br.pucpr.jvlppm.classicmix.entities;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 
 import java.util.List;
@@ -21,16 +24,21 @@ public class Brick extends GameEntity {
     public char itemCode;
     private float scale;
     private final boolean useShadows;
+    private Frame cache;
+    private float xOffset, yOffset;
 
-    public Brick(Frame frame, int strength) {
+    public Brick(Frame frame, int strength, float scale) {
         this.initialStrength = strength;
         this.strength = strength;
         this.brickFrame = frame;
         this.shadowFrame = Assets.getInstance().brickShadow;
         this.breakingFrames = Assets.getInstance().brickStrength;
         this.useShadows = Settings.Graphics.useShadows();
+        this.scale = scale;
         if(strength > breakingFrames.size())
             this.stateFrame = Assets.getInstance().brickReinforcement;
+        if(scale > 0)
+            updateImage();
     }
 
     public void onBalHit(int force) {
@@ -38,12 +46,8 @@ public class Brick extends GameEntity {
             return;
         hitTimeCount = 0;
         strength -= force;
-        int state = (int)((((float)strength / 6) * (breakingFrames.size() + 1)));
-        state = Math.max(0, state);
 
-        if(state < breakingFrames.size())
-            stateFrame = Assets.getInstance().brickStrength.get(state);
-        else stateFrame = null;
+        updateImage();
     }
 
     @Override
@@ -56,15 +60,51 @@ public class Brick extends GameEntity {
     public void draw(GameTime gameTime, Canvas canvas) {
         super.draw(gameTime, canvas);
 
-        if(useShadows)
-            draw(canvas, shadowFrame, x * scale, y * scale, 0, 0, scale);
-        draw(canvas, brickFrame, x * scale, y * scale, 0, 0, scale);
-        if(stateFrame != null)
-            draw(canvas, stateFrame, x * scale, y * scale, 0, 0, scale);
+        if(cache != null) {
+            draw(canvas, cache, (x * scale - xOffset), (y * scale - yOffset), 0, 0, 1);
+        }
+        else {
+            if (useShadows)
+                draw(canvas, shadowFrame, x * scale, y * scale, 0, 0, scale);
+            draw(canvas, brickFrame, x * scale, y * scale, 0, 0, scale);
+
+            if (stateFrame != null)
+                draw(canvas, stateFrame, x * scale, y * scale, 0, 0, scale);
+        }
     }
 
     public void setScale(float scale) {
         this.scale = scale;
+        updateImage();
+    }
+
+    private void updateImage() {
+        Bitmap bmp;
+        if(this.cache == null) {
+            bmp = Bitmap.createBitmap((int) (shadowFrame.rect.width() * scale), (int) (shadowFrame.rect.height() * scale), Bitmap.Config.ARGB_4444);
+            this.cache = new Frame(bmp, new Rect(0, 0, bmp.getWidth(), bmp.getHeight()), 1);
+            xOffset = 15;
+            yOffset = 15;
+        }
+        else {
+            bmp = this.cache.texture;
+        }
+        Canvas canvas = new Canvas(bmp);
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        if(Settings.Graphics.useShadows())
+            draw(canvas, shadowFrame, bmp.getWidth() / 2, bmp.getHeight() / 2, 0.5f, 0.5f, scale);
+        draw(canvas, brickFrame, bmp.getWidth() / 2, bmp.getHeight() / 2, 0.5f, 0.5f, scale);
+
+        if(strength < initialStrength) {
+            int state = (int) ((((float) strength / 6) * (breakingFrames.size() + 1)));
+            state = Math.max(0, state);
+
+            if (state < breakingFrames.size()) {
+                stateFrame = Assets.getInstance().brickStrength.get(state);
+                draw(canvas, stateFrame, bmp.getWidth() / 2, bmp.getHeight() / 2, 0.5f, 0.5f, scale);
+            }
+            else stateFrame = null;
+        }
     }
 
     public void getRect(Rect dest) {
@@ -74,5 +114,15 @@ public class Brick extends GameEntity {
                  (int) (y * scale),
                  (int) (x * scale + width),
                  (int) (y * scale + height));
+    }
+
+    public float centerX() {
+        float width = brickFrame.rect.width();
+        return (x + width / 2) * scale;
+    }
+
+    public float centerY() {
+        float height = brickFrame.rect.height();
+        return (y + height / 2) * scale;
     }
 }
